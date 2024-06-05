@@ -2,6 +2,7 @@ package com.james.playground.controller.temporal;
 
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
 import com.james.playground.temporal.dsl.language.WorkflowNode;
+import com.james.playground.temporal.dsl.language.nodes.DelayNode.DelayInterruptionType;
 import com.james.playground.temporal.dsl.workflows.MarketingWorkflow;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
@@ -47,5 +48,18 @@ public class DSLController {
           log.error("Marketing workflow failure: {}", ex.getMessage());
           return null;
         });
+  }
+
+  @PostMapping("/delay/interruption")
+  public void interruptDelay(
+      @RequestParam String workflowDefinitionId,
+      @RequestParam Long userId,
+      @RequestParam DelayInterruptionType type
+  ) {
+    this.workflowClient.newWorkflowStub(
+            MarketingWorkflow.class,
+            String.format(MarketingWorkflow.WORKFLOW_ID_FORMAT, workflowDefinitionId, userId)
+        )
+        .interruptDelay(type);
   }
 }
