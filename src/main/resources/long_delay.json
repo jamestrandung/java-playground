@@ -12,7 +12,7 @@
     "nextNodeId": "2",
     "modifiable": true,
     "activeInProduction": true,
-    "durationInSeconds": 3600
+    "durationInSeconds": 10
   },
   "2": {
     "@type": "PRINTER",

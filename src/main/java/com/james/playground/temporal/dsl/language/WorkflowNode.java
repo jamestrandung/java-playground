@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.james.playground.temporal.dsl.language.nodes.DelayNode;
 import com.james.playground.temporal.dsl.language.nodes.PrinterNode;
 import com.james.playground.temporal.dsl.language.nodes.TransitNode;
-import com.james.playground.temporal.dsl.workflows.DynamicWorkflowImpl;
+import com.james.playground.temporal.dsl.workflows.visitors.DelegatingVisitor;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,7 +30,7 @@ import lombok.experimental.SuperBuilder;
 })
 public abstract class WorkflowNode {
   public static final String[] IGNORABLE_FIELDS_FOR_WORKFLOW_EXECUTION = {
-      Fields.deletedOn, Fields.modifiable, Fields.activeInProduction
+      Fields.modifiable, Fields.activeInProduction
   };
 
   public static final Set<Class<? extends WorkflowNode>> EXISTING_IMPLEMENTATIONS = Set.of(
@@ -41,12 +41,12 @@ public abstract class WorkflowNode {
 
   private String id;
   private String nextNodeId;
-  
   private Long deletedOn;
+
   private boolean modifiable;
   private boolean activeInProduction;
 
-  public abstract WorkflowNode accept(DynamicWorkflowImpl visitor);
+  public abstract WorkflowNode accept(DelegatingVisitor visitor);
 
   @JsonIgnore
   public boolean isDeleted() {

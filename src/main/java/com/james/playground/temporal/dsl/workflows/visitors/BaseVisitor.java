@@ -1,12 +1,20 @@
-package com.james.playground.temporal.dsl.workflows;
+package com.james.playground.temporal.dsl.workflows.visitors;
 
 import com.james.playground.temporal.dsl.activities.PrinterActivity;
+import com.james.playground.temporal.dsl.activities.UserGroupActivity;
+import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
+import com.james.playground.temporal.dsl.language.WorkflowNode;
+import com.james.playground.temporal.dsl.language.WorkflowStore;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
-public class DynamicWorkflowConfigs {
+@NoArgsConstructor
+@AllArgsConstructor
+public abstract class BaseVisitor {
   protected static final RetryOptions RETRY_OPTIONS = RetryOptions.newBuilder()
       .setInitialInterval(Duration.ofSeconds(1)) // Wait duration before first retry
       .setMaximumInterval(Duration.ofSeconds(60)) // Maximum wait duration between retries
@@ -28,4 +36,28 @@ public class DynamicWorkflowConfigs {
           .build(),
       null
   );
+
+  protected final UserGroupActivity userGroupActivity = Workflow.newActivityStub(
+      UserGroupActivity.class,
+      ActivityOptions.newBuilder(ACTIVITY_OPTIONS)
+          .setTaskQueue(UserGroupActivity.QUEUE_NAME)
+          .build(),
+      null
+  );
+
+  protected DynamicWorkflowInput input;
+
+  public WorkflowNode findNodeIgnoringDeletedNodes(String nodeId) {
+    return Workflow.sideEffect(
+        WorkflowNode.class,
+        () -> WorkflowStore.getInstance().findNodeIgnoringDeletedNodes(this.input.getWorkflowDefinitionId(), nodeId)
+    );
+  }
+
+  public WorkflowNode findNodeAcceptingDeletedNode(String nodeId) {
+    return Workflow.sideEffect(
+        WorkflowNode.class,
+        () -> WorkflowStore.getInstance().findNodeAcceptingDeletedNode(this.input.getWorkflowDefinitionId(), nodeId)
+    );
+  }
 }

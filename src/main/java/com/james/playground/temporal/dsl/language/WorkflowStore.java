@@ -65,16 +65,20 @@ public class WorkflowStore {
     INSTANCE = this;
   }
 
-  public WorkflowNode find(String workflowDefinitionId, String nodeId) {
-    log.info("Looking for node, workflowDefinition ID: {}, node ID: {}", workflowDefinitionId, nodeId);
-    Map<String, WorkflowNode> workflowDefinition = CACHE.getOrDefault(workflowDefinitionId, Collections.emptyMap());
+  public Map<String, WorkflowNode> findWorkflowDefinition(String workflowDefinitionId) {
+    return CACHE.getOrDefault(workflowDefinitionId, Collections.emptyMap());
+  }
+
+  public WorkflowNode findNodeIgnoringDeletedNodes(String workflowDefinitionId, String nodeId) {
+    log.info("Looking for alive node, workflowDefinition ID: {}, node ID: {}", workflowDefinitionId, nodeId);
+    Map<String, WorkflowNode> workflowDefinition = this.findWorkflowDefinition(workflowDefinitionId);
 
     String lookUpNodeId = nodeId;
     while (true) {
       WorkflowNode result = workflowDefinition.get(lookUpNodeId);
 
       if (result == null) {
-        throw new RuntimeException("Node not found, " + "workflowDefinitionId: " + workflowDefinitionId + ", nodeId: " + nodeId);
+        throw new RuntimeException("Node not found, " + "workflowDefinitionId: " + workflowDefinitionId + ", nodeId: " + lookUpNodeId);
       }
 
       if (result.isDeleted()) {
@@ -84,5 +88,18 @@ public class WorkflowStore {
 
       return result;
     }
+  }
+
+  public WorkflowNode findNodeAcceptingDeletedNode(String workflowDefinitionId, String nodeId) {
+    log.info("Looking for node, workflowDefinition ID: {}, node ID: {}", workflowDefinitionId, nodeId);
+    Map<String, WorkflowNode> workflowDefinition = this.findWorkflowDefinition(workflowDefinitionId);
+
+    WorkflowNode result = workflowDefinition.get(nodeId);
+
+    if (result == null) {
+      throw new RuntimeException("Node not found, " + "workflowDefinitionId: " + workflowDefinitionId + ", nodeId: " + nodeId);
+    }
+
+    return result;
   }
 }
