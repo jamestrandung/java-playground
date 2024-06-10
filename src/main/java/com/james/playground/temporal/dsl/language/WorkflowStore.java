@@ -20,7 +20,7 @@ public class WorkflowStore {
   private static final ObjectMapper OBJECT_MAPPER;
   private static final Map<String, WorkflowNode> DEFINITION;
   private static final Map<String, Map<String, WorkflowNode>> CACHE;
-  public static WorkflowStore INSTANCE;
+  private static WorkflowStore INSTANCE;
 
   static {
     OBJECT_MAPPER = new ObjectMapper();
@@ -29,13 +29,20 @@ public class WorkflowStore {
 
     try {
       // 1. Initial version
-      Resource resource = new ClassPathResource("workflow_definition_1.json");
+      //      Resource resource = new ClassPathResource("workflow_definition_1.json");
       // 2. Updated delay duration + printed text
       //      Resource resource = new ClassPathResource("workflow_definition_2.json");
       // 3. Delete a node
       //      Resource resource = new ClassPathResource("workflow_definition_3.json");
       // 4. Add a new node
       //      Resource resource = new ClassPathResource("workflow_definition_4.json");
+
+      // 1. Long delay of 3600 seconds
+      Resource resource = new ClassPathResource("long_delay.json");
+      // 2. Shorten the delay
+      //      Resource resource = new ClassPathResource("long_delay_shorten.json");
+      // 3. Delete the delay node
+      //      Resource resource = new ClassPathResource("long_delay_deleted.json");
 
       DEFINITION = OBJECT_MAPPER.readValue(
           resource.getInputStream(),
@@ -49,21 +56,29 @@ public class WorkflowStore {
     }
   }
 
+  public static WorkflowStore getInstance() {
+    return INSTANCE;
+  }
+
   @PostConstruct
   void init() {
     INSTANCE = this;
   }
 
-  public WorkflowNode find(String workflowDefinitionId, String nodeId) {
-    log.info("Looking for node, workflowDefinition ID: {}, node ID: {}", workflowDefinitionId, nodeId);
-    Map<String, WorkflowNode> workflowDefinition = CACHE.getOrDefault(workflowDefinitionId, Collections.emptyMap());
+  public Map<String, WorkflowNode> findWorkflowDefinition(String workflowDefinitionId) {
+    return CACHE.getOrDefault(workflowDefinitionId, Collections.emptyMap());
+  }
+
+  public WorkflowNode findNodeIgnoringDeletedNodes(String workflowDefinitionId, String nodeId) {
+    log.info("Looking for alive node, workflowDefinition ID: {}, node ID: {}", workflowDefinitionId, nodeId);
+    Map<String, WorkflowNode> workflowDefinition = this.findWorkflowDefinition(workflowDefinitionId);
 
     String lookUpNodeId = nodeId;
     while (true) {
       WorkflowNode result = workflowDefinition.get(lookUpNodeId);
 
       if (result == null) {
-        throw new RuntimeException("Node not found, " + "workflowDefinitionId: " + workflowDefinitionId + ", nodeId: " + nodeId);
+        throw new RuntimeException("Node not found, " + "workflowDefinitionId: " + workflowDefinitionId + ", nodeId: " + lookUpNodeId);
       }
 
       if (result.isDeleted()) {
@@ -73,5 +88,18 @@ public class WorkflowStore {
 
       return result;
     }
+  }
+
+  public WorkflowNode findNodeAcceptingDeletedNode(String workflowDefinitionId, String nodeId) {
+    log.info("Looking for node, workflowDefinition ID: {}, node ID: {}", workflowDefinitionId, nodeId);
+    Map<String, WorkflowNode> workflowDefinition = this.findWorkflowDefinition(workflowDefinitionId);
+
+    WorkflowNode result = workflowDefinition.get(nodeId);
+
+    if (result == null) {
+      throw new RuntimeException("Node not found, " + "workflowDefinitionId: " + workflowDefinitionId + ", nodeId: " + nodeId);
+    }
+
+    return result;
   }
 }

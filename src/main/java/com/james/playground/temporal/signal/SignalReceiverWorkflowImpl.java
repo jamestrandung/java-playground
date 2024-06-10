@@ -13,13 +13,13 @@ public class SignalReceiverWorkflowImpl implements SignalReceiverWorkflow {
 
   @Override
   public String waitForSignal() {
-    logger.info("Starting to wait for Signal");
+    //    logger.info("Starting to wait for Signal");
 
-    Workflow.await(() -> StringUtils.isNotBlank(message));
+    Workflow.await(() -> StringUtils.isNotBlank(this.message));
 
-    logger.info("Received Signal");
+    //    logger.info("Received Signal");
 
-    return "COMPLETED-" + message;
+    return "COMPLETED-" + this.message;
   }
 
   @Override
