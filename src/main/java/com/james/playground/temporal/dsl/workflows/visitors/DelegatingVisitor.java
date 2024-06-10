@@ -10,11 +10,14 @@ public class DelegatingVisitor extends BaseVisitor {
   private final PrinterVisitor printerVisitor;
   @Delegate
   private final DelayVisitor delayVisitor;
+  @Delegate
+  private final RandomDistributionVisitor randomDistributionVisitor;
 
   public DelegatingVisitor(DynamicWorkflowInput input) {
     super(input);
     this.transitVisitor = new TransitVisitor(input);
     this.delayVisitor = new DelayVisitor(input);
     this.printerVisitor = new PrinterVisitor(input);
+    this.randomDistributionVisitor = new RandomDistributionVisitor(input);
   }
 }

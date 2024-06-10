@@ -1,5 +1,6 @@
 package com.james.playground.controller.temporal;
 
+import com.james.playground.temporal.dsl.activities.UserGroupActivity;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
 import com.james.playground.temporal.dsl.language.WorkflowNode;
 import com.james.playground.temporal.dsl.language.WorkflowStore;
@@ -10,11 +11,16 @@ import com.james.playground.temporal.dsl.language.nodes.PrinterNode;
 import com.james.playground.temporal.dsl.workflows.MarketingWorkflow;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,11 +33,8 @@ public class DSLController {
   private WorkflowClient workflowClient;
   @Autowired
   private WorkflowStore workflowStore;
-
-  @PostMapping("/parse")
-  public void parse(@RequestBody Map<String, WorkflowNode> dsl) {
-    log.info("DSL: {}", dsl);
-  }
+  @Autowired
+  private UserGroupActivity userGroupActivity;
 
   @PostMapping
   public void startMarketingWorkflow(@RequestParam String workflowDefinitionId, @RequestParam Long userId) {
@@ -54,6 +57,39 @@ public class DSLController {
           log.error("Marketing workflow failure: {}", ex.getMessage());
           return null;
         });
+  }
+
+  @PostMapping("/multiple")
+  public void startMultipleMarketingWorkflows(
+      @RequestParam String workflowDefinitionId,
+      @RequestParam Long userId,
+      @RequestParam Integer count
+  ) {
+    List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+    for (int i = 0; i < count; i++) {
+      MarketingWorkflow workflow = this.workflowClient.newWorkflowStub(
+          MarketingWorkflow.class,
+          WorkflowOptions.newBuilder()
+              .setTaskQueue(MarketingWorkflow.QUEUE_NAME)
+              .setWorkflowId(String.format(MarketingWorkflow.WORKFLOW_ID_FORMAT, workflowDefinitionId, userId) + "-" + i)
+              .build()
+      );
+
+      CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+        WorkflowClient.start(
+            workflow::execute,
+            DynamicWorkflowInput.builder()
+                .workflowDefinitionId(workflowDefinitionId)
+                .userId(userId)
+                .build()
+        );
+      });
+
+      futures.add(future);
+    }
+
+    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
   }
 
   @PostMapping("/delay/release")
@@ -149,5 +185,15 @@ public class DSLController {
                 .affectedNodeId(affectedNodeId)
                 .build()
         );
+  }
+
+  @GetMapping("/counters")
+  public Map<Long, AtomicInteger> getInMemoryCounters() {
+    return this.userGroupActivity.getInMemoryCounters();
+  }
+
+  @DeleteMapping("/counters")
+  public void resetInMemoryCounters() {
+    this.userGroupActivity.resetInMemoryCounters();
   }
 }

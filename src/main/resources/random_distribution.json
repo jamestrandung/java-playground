@@ -1,0 +1,26 @@
+{
+  "START": {
+    "@type": "TRANSIT",
+    "id": "START",
+    "nextNodeId": "1",
+    "modifiable": false,
+    "activeInProduction": true
+  },
+  "1": {
+    "@type": "RANDOM_DISTRIBUTION",
+    "id": "1",
+    "nextNodeIds": [
+      "END",
+      "END",
+      "END"
+    ],
+    "modifiable": true,
+    "activeInProduction": true
+  },
+  "END": {
+    "@type": "TRANSIT",
+    "id": "END",
+    "modifiable": false,
+    "activeInProduction": true
+  }
+}

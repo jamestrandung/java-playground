@@ -38,11 +38,13 @@ public class WorkflowStore {
       //      Resource resource = new ClassPathResource("workflow_definition_4.json");
 
       // 1. Long delay of 3600 seconds
-      Resource resource = new ClassPathResource("long_delay.json");
+      //      Resource resource = new ClassPathResource("long_delay.json");
       // 2. Shorten the delay
       //      Resource resource = new ClassPathResource("long_delay_shorten.json");
       // 3. Delete the delay node
       //      Resource resource = new ClassPathResource("long_delay_deleted.json");
+
+      Resource resource = new ClassPathResource("random_distribution.json");
 
       DEFINITION = OBJECT_MAPPER.readValue(
           resource.getInputStream(),

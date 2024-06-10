@@ -7,4 +7,5 @@ public class NodeType {
   public static final String TRANSIT = "TRANSIT";
   public static final String PRINTER = "PRINTER";
   public static final String DELAY = "DELAY";
+  public static final String RANDOM_DISTRIBUTION = "RANDOM_DISTRIBUTION";
 }

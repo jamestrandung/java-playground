@@ -10,7 +10,10 @@ import io.temporal.spring.boot.ActivityImpl;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ActivityImpl(taskQueues = UserGroupActivity.QUEUE_NAME)
 public class UserGroupActivityImpl implements UserGroupActivity {
+  private final Map<Long, AtomicInteger> counters = new ConcurrentHashMap<>();
   @Autowired
   private WorkflowClient workflowClient;
 
@@ -108,5 +112,27 @@ public class UserGroupActivityImpl implements UserGroupActivity {
     }
 
     log.info("Completed broadcasting Signal from Activity");
+  }
+
+  @Override
+  public void updateInMemoryCounter(UserGroupInput input) {
+    this.counters.compute(input.getGroupId(), (k, v) -> {
+      if (v == null) {
+        return new AtomicInteger(1);
+      }
+
+      v.incrementAndGet();
+      return v;
+    });
+  }
+
+  @Override
+  public Map<Long, AtomicInteger> getInMemoryCounters() {
+    return this.counters;
+  }
+
+  @Override
+  public void resetInMemoryCounters() {
+    this.counters.clear();
   }
 }

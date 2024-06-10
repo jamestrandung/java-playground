@@ -4,6 +4,8 @@ import com.james.playground.temporal.dsl.workflows.core.GroupSignalBroadcastWork
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,6 +26,13 @@ public interface UserGroupActivity {
 
   @ActivityMethod
   <T> void broadcastSignalToGroup(GroupSignalInput<T> input);
+
+  @ActivityMethod
+  void updateInMemoryCounter(UserGroupInput input);
+
+  Map<Long, AtomicInteger> getInMemoryCounters();
+
+  void resetInMemoryCounters();
 
   @Data
   @Builder
