@@ -29,9 +29,7 @@ import lombok.experimental.SuperBuilder;
     @JsonSubTypes.Type(value = DelayNode.class, name = NodeType.DELAY)
 })
 public abstract class WorkflowNode {
-  public static final String[] IGNORABLE_FIELDS_FOR_WORKFLOW_EXECUTION = {
-      Fields.deletedOn, Fields.modifiable, Fields.activeInProduction
-  };
+  public static final String[] IGNORABLE_FIELDS_FOR_WORKFLOW_EXECUTION = {Fields.modifiable, Fields.activeInProduction};
 
   public static final Set<Class<? extends WorkflowNode>> EXISTING_IMPLEMENTATIONS = Set.of(
       TransitNode.class,
@@ -41,8 +39,8 @@ public abstract class WorkflowNode {
 
   private String id;
   private String nextNodeId;
-  
   private Long deletedOn;
+
   private boolean modifiable;
   private boolean activeInProduction;
 

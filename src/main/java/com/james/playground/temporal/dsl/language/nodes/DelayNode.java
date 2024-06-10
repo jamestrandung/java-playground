@@ -27,9 +27,4 @@ public class DelayNode extends WorkflowNode {
   public Duration getDuration() {
     return this.durationInSeconds <= 0 ? Duration.ZERO : Duration.ofSeconds(this.durationInSeconds);
   }
-
-  public enum DelayInterruptionType {
-    IMMEDIATE_RELEASE,
-    DURATION_MODIFIED
-  }
 }
