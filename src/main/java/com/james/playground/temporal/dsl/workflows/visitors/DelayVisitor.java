@@ -115,6 +115,11 @@ public class DelayVisitor extends BaseVisitor implements DynamicVisitor<DelayNod
       return;
     }
 
+    // If there's a pending signal that requires immediate intervention, don't overwrite it
+    if (DelayInterruptionSignal.requireImmediateIntervention(this.interruptionSignal)) {
+      return;
+    }
+
     this.interruptionSignal = signal;
 
     // TODO-1: handle the scenario where signal arrives just

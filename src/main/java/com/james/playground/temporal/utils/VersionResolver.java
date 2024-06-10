@@ -30,15 +30,15 @@ public class VersionResolver {
   }
 
   public Integer get(Changeable changeable) {
-    return versions.get(changeable);
+    return this.versions.get(changeable);
   }
 
   List<String> toList() {
-    if (MapUtils.isEmpty(versions)) {
+    if (MapUtils.isEmpty(this.versions)) {
       return Collections.emptyList();
     }
 
-    return EntryStream.of(versions)
+    return EntryStream.of(this.versions)
         .filterValues(version -> version != Workflow.DEFAULT_VERSION)
         .mapKeyValue((changeable, version) -> changeable.name() + "-" + version)
         .toList();

@@ -18,7 +18,8 @@ public class SignalSenderWorkflowImpl implements SignalSenderWorkflow {
     // workflow will fail immediately on this error instead of being
     // stuck in a retry loop.
     ExternalWorkflowStub receiver = Workflow.newUntypedExternalWorkflowStub(
-        SignalReceiverWorkflow.WORKFLOW_ID_PREFIX + workflowIdSuffix);
+        SignalReceiverWorkflow.WORKFLOW_ID_PREFIX + workflowIdSuffix
+    );
 
     receiver.signal("unblock", message);
 

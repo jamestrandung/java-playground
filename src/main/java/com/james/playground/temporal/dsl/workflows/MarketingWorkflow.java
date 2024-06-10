@@ -1,5 +1,6 @@
 package com.james.playground.temporal.dsl.workflows;
 
+import com.james.playground.temporal.dsl.workflows.core.DynamicWorkflow;
 import io.temporal.workflow.WorkflowInterface;
 
 @WorkflowInterface

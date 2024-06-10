@@ -1,4 +1,4 @@
-package com.james.playground.temporal.dsl.workflows;
+package com.james.playground.temporal.dsl.workflows.core;
 
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
 import com.james.playground.temporal.dsl.language.nodes.DelayNode.DelayInterruptionSignal;
