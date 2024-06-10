@@ -135,4 +135,13 @@ public class UserGroupActivityImpl implements UserGroupActivity {
   public void resetInMemoryCounters() {
     this.counters.clear();
   }
+
+  @Override
+  public boolean isUserInGroup(UserGroupInput input) {
+    // Fetch all users from the given group page by page and
+    // save the results into Redis using LinkedHashSet by page
+    // as well. The goal is to reuse the same results in different
+    // workflows.
+    return input.getGroupId() > input.getUserId();
+  }
 }

@@ -34,6 +34,9 @@ public interface UserGroupActivity {
 
   void resetInMemoryCounters();
 
+  @ActivityMethod
+  boolean isUserInGroup(UserGroupInput input);
+
   @Data
   @Builder
   @NoArgsConstructor

@@ -1,4 +1,4 @@
-package com.james.playground.temporal.dsl.workflows.visitors;
+package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
 import com.james.playground.temporal.dsl.language.WorkflowNode;
@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 
 @Slf4j
 @NoArgsConstructor
-public class TransitVisitor extends BaseVisitor implements DynamicVisitor<TransitNode> {
+public class TransitVisitor extends NodeVisitor<TransitNode> {
   private static final Logger logger = Workflow.getLogger(TransitVisitor.class);
 
   public TransitVisitor(DynamicWorkflowInput input) {

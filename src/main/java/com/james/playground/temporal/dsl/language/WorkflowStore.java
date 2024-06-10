@@ -44,7 +44,8 @@ public class WorkflowStore {
       // 3. Delete the delay node
       //      Resource resource = new ClassPathResource("long_delay_deleted.json");
 
-      Resource resource = new ClassPathResource("random_distribution.json");
+      //      Resource resource = new ClassPathResource("random_distribution.json");
+      Resource resource = new ClassPathResource("branch.json");
 
       DEFINITION = OBJECT_MAPPER.readValue(
           resource.getInputStream(),

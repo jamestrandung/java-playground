@@ -1,4 +1,4 @@
-package com.james.playground.temporal.dsl.workflows.visitors;
+package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 
 import com.james.playground.temporal.dsl.activities.PrinterActivity.PrinterInput;
 import com.james.playground.temporal.dsl.dto.DynamicActivityResult;
@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 
 @Slf4j
 @NoArgsConstructor
-public class PrinterVisitor extends BaseVisitor implements DynamicVisitor<PrinterNode> {
+public class PrinterVisitor extends NodeVisitor<PrinterNode> {
   private static final Logger logger = Workflow.getLogger(PrinterVisitor.class);
 
   public PrinterVisitor(DynamicWorkflowInput input) {

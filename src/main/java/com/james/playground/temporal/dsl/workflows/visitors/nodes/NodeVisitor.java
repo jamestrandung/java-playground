@@ -1,4 +1,4 @@
-package com.james.playground.temporal.dsl.workflows.visitors;
+package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 
 import com.james.playground.temporal.dsl.activities.PrinterActivity;
 import com.james.playground.temporal.dsl.activities.UserGroupActivity;
@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class BaseVisitor {
+public abstract class NodeVisitor<T extends WorkflowNode> {
   protected static final RetryOptions RETRY_OPTIONS = RetryOptions.newBuilder()
       .setInitialInterval(Duration.ofSeconds(1)) // Wait duration before first retry
       .setMaximumInterval(Duration.ofSeconds(60)) // Maximum wait duration between retries
@@ -46,6 +46,8 @@ public abstract class BaseVisitor {
   );
 
   protected DynamicWorkflowInput input;
+
+  public abstract WorkflowNode visit(T node);
 
   public WorkflowNode findNodeIgnoringDeletedNodes(String nodeId) {
     return Workflow.sideEffect(

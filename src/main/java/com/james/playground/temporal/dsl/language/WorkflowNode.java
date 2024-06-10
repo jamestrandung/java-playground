@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import com.james.playground.temporal.dsl.language.nodes.BranchNode;
 import com.james.playground.temporal.dsl.language.nodes.DelayNode;
 import com.james.playground.temporal.dsl.language.nodes.PrinterNode;
 import com.james.playground.temporal.dsl.language.nodes.RandomDistributionNode;
@@ -28,7 +29,8 @@ import lombok.experimental.SuperBuilder;
     @JsonSubTypes.Type(value = TransitNode.class, name = NodeType.TRANSIT),
     @JsonSubTypes.Type(value = PrinterNode.class, name = NodeType.PRINTER),
     @JsonSubTypes.Type(value = DelayNode.class, name = NodeType.DELAY),
-    @JsonSubTypes.Type(value = RandomDistributionNode.class, name = NodeType.RANDOM_DISTRIBUTION)
+    @JsonSubTypes.Type(value = RandomDistributionNode.class, name = NodeType.RANDOM_DISTRIBUTION),
+    @JsonSubTypes.Type(value = BranchNode.class, name = NodeType.BRANCH),
 })
 public abstract class WorkflowNode {
   public static final String[] IGNORABLE_FIELDS_FOR_WORKFLOW_EXECUTION = {
@@ -39,7 +41,8 @@ public abstract class WorkflowNode {
       TransitNode.class,
       PrinterNode.class,
       DelayNode.class,
-      RandomDistributionNode.class
+      RandomDistributionNode.class,
+      BranchNode.class
   );
 
   private String id;

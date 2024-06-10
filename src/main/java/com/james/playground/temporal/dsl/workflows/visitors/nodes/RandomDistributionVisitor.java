@@ -1,4 +1,4 @@
-package com.james.playground.temporal.dsl.workflows.visitors;
+package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 
 import com.james.playground.temporal.dsl.activities.UserGroupActivity.UserGroupInput;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 
 @Slf4j
 @NoArgsConstructor
-public class RandomDistributionVisitor extends BaseVisitor implements DynamicVisitor<RandomDistributionNode> {
+public class RandomDistributionVisitor extends NodeVisitor<RandomDistributionNode> {
   private static final Logger logger = Workflow.getLogger(RandomDistributionVisitor.class);
 
   public RandomDistributionVisitor(DynamicWorkflowInput input) {

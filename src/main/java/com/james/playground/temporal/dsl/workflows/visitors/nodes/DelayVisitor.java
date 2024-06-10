@@ -1,4 +1,4 @@
-package com.james.playground.temporal.dsl.workflows.visitors;
+package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 
 import com.james.playground.temporal.dsl.activities.UserGroupActivity.UserGroupInput;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 
 @Slf4j
 @NoArgsConstructor
-public class DelayVisitor extends BaseVisitor implements DynamicVisitor<DelayNode> {
+public class DelayVisitor extends NodeVisitor<DelayNode> {
   private static final Logger logger = Workflow.getLogger(DelayVisitor.class);
 
   private DelayNode activeNode;

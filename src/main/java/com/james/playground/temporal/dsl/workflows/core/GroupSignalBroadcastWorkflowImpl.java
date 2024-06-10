@@ -84,6 +84,7 @@ public class GroupSignalBroadcastWorkflowImpl implements GroupSignalBroadcastWor
 
         ExternalWorkflowStub receiver = Workflow.newUntypedExternalWorkflowStub(input.getWorkflowIdPrefix() + userId);
 
+        // https://community.temporal.io/t/workflowrejectedexecutionerror-whats-the-cause-and-how-to-solve/871/2?u=jamestran
         Promise<Void> future = Async.procedure(receiver::signal, input.getSignalName(), input.getPayload())
             .exceptionally(ex -> {
               logger.info(

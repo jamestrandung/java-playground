@@ -1,0 +1,58 @@
+{
+  "START": {
+    "@type": "TRANSIT",
+    "id": "START",
+    "nextNodeId": "1",
+    "modifiable": false,
+    "activeInProduction": true
+  },
+  "1": {
+    "@type": "BRANCH",
+    "id": "1",
+    "conditions": [
+      {
+        "@type": "GROUP_MEMBERSHIP",
+        "nextNodeId": "2",
+        "groupId": 100
+      },
+      {
+        "@type": "GROUP_MEMBERSHIP",
+        "nextNodeId": "3",
+        "groupId": 200
+      }
+    ],
+    "nextNodeId": "4",
+    "modifiable": true,
+    "activeInProduction": true
+  },
+  "2": {
+    "@type": "PRINTER",
+    "id": "2",
+    "nextNodeId": "END",
+    "modifiable": true,
+    "activeInProduction": true,
+    "text": "FIRST BRANCH"
+  },
+  "3": {
+    "@type": "PRINTER",
+    "id": "3",
+    "nextNodeId": "END",
+    "modifiable": true,
+    "activeInProduction": true,
+    "text": "SECOND BRANCH"
+  },
+  "4": {
+    "@type": "PRINTER",
+    "id": "4",
+    "nextNodeId": "END",
+    "modifiable": true,
+    "activeInProduction": true,
+    "text": "DEFAULT BRANCH"
+  },
+  "END": {
+    "@type": "TRANSIT",
+    "id": "END",
+    "modifiable": false,
+    "activeInProduction": true
+  }
+}
