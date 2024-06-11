@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 
 @Slf4j
 public class DynamicWorkflowImpl implements DynamicWorkflow {
-  private static final Logger logger = Workflow.getLogger(DynamicWorkflowImpl.class);
+  private static final Logger LOGGER = Workflow.getLogger(DynamicWorkflowImpl.class);
 
   protected DynamicWorkflowInput input;
   protected DelegatingVisitor visitor;

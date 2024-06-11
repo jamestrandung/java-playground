@@ -7,11 +7,11 @@ import org.slf4j.Logger;
 
 @WorkflowImpl(taskQueues = CancellableWorkflow.QUEUE_NAME)
 public class CancellableWorkflowImpl implements CancellableWorkflow {
-  private static final Logger logger = Workflow.getLogger(CancellableWorkflowImpl.class);
+  private static final Logger LOGGER = Workflow.getLogger(CancellableWorkflowImpl.class);
 
   @Override
   public String waitForCancellation() {
-    logger.info("Starting to wait for cancellation");
+    LOGGER.info("Starting to wait for cancellation");
 
     SleepyWorkflow sleepyWorkflow = Workflow.newChildWorkflowStub(
         SleepyWorkflow.class,

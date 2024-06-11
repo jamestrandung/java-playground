@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 @Slf4j
 @NoArgsConstructor
 public class RandomDistributionVisitor extends NodeVisitor<RandomDistributionNode> {
-  private static final Logger logger = Workflow.getLogger(RandomDistributionVisitor.class);
+  private static final Logger LOGGER = Workflow.getLogger(RandomDistributionVisitor.class);
 
   public RandomDistributionVisitor(DynamicWorkflowInput input) {
     super(input);

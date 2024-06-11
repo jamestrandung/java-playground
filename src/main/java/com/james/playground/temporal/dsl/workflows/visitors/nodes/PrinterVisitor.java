@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 @Slf4j
 @NoArgsConstructor
 public class PrinterVisitor extends NodeVisitor<PrinterNode> {
-  private static final Logger logger = Workflow.getLogger(PrinterVisitor.class);
+  private static final Logger LOGGER = Workflow.getLogger(PrinterVisitor.class);
 
   public PrinterVisitor(DynamicWorkflowInput input) {
     super(input);

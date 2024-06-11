@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 
 @Slf4j
 public class BranchVisitor extends NodeVisitor<BranchNode> {
-  private static final Logger logger = Workflow.getLogger(BranchVisitor.class);
+  private static final Logger LOGGER = Workflow.getLogger(BranchVisitor.class);
 
   public BranchVisitor(DynamicWorkflowInput input) {
     super(input);

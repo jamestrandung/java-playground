@@ -29,14 +29,14 @@ public class UserGroupActivityImpl implements UserGroupActivity {
   @Override
   public void addToGroup(UserGroupInput input) {
     log.info("Adding user {} to group {}", input.getUserId(), input.getGroupId());
-    MiscUtils.sleep(Duration.ofSeconds(5));
+    MiscUtils.sleep(Duration.ofSeconds(2));
     log.info("Added user {} to group {}", input.getUserId(), input.getGroupId());
   }
 
   @Override
   public void removeFromGroup(UserGroupInput input) {
     log.info("Removing user {} from group {}", input.getUserId(), input.getGroupId());
-    MiscUtils.sleep(Duration.ofSeconds(5));
+    MiscUtils.sleep(Duration.ofSeconds(2));
     log.info("Removed user {} from group {}", input.getUserId(), input.getGroupId());
   }
 

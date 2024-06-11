@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 @Slf4j
 @NoArgsConstructor
 public class TransitVisitor extends NodeVisitor<TransitNode> {
-  private static final Logger logger = Workflow.getLogger(TransitVisitor.class);
+  private static final Logger LOGGER = Workflow.getLogger(TransitVisitor.class);
 
   public TransitVisitor(DynamicWorkflowInput input) {
     super(input);

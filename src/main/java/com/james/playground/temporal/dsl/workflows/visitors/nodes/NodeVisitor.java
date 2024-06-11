@@ -1,6 +1,7 @@
 package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 
 import com.james.playground.temporal.dsl.activities.PrinterActivity;
+import com.james.playground.temporal.dsl.activities.UserActivity;
 import com.james.playground.temporal.dsl.activities.UserGroupActivity;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
 import com.james.playground.temporal.dsl.language.WorkflowNode;
@@ -44,9 +45,15 @@ public abstract class NodeVisitor<T extends WorkflowNode> {
       null
   );
 
+  protected final UserActivity userActivity = Workflow.newActivityStub(
+      UserActivity.class,
+      ActivityOptions.newBuilder(ACTIVITY_OPTIONS)
+          .setTaskQueue(UserActivity.QUEUE_NAME)
+          .build(),
+      null
+  );
+
   protected DynamicWorkflowInput input;
 
   public abstract String visit(T node);
-
-
 }

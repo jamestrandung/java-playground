@@ -4,12 +4,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.james.playground.temporal.dsl.language.WorkflowNode;
 import com.james.playground.temporal.dsl.workflows.visitors.DelegatingVisitor;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.StringUtils;
 
 @Data
 @SuperBuilder
@@ -17,7 +21,16 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class DelayNode extends WorkflowNode {
+  private static final DateTimeFormatter TIME_OF_DAY_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+
+  // Delay by duration
   private int durationInSeconds;
+
+  // Delay by date time
+  private String releaseDateTime; // ISO format: yyyy-MM-dd'T'HH:mm:ss
+  private String releaseTimeOfDay;
+  private boolean shouldReleaseInUserTimezone;
+
   private long groupIdForActiveUsers;
 
   @Override
@@ -26,8 +39,33 @@ public class DelayNode extends WorkflowNode {
   }
 
   @JsonIgnore
+  public boolean isDelayByDuration() {
+    return this.durationInSeconds > 0;
+  }
+
+  @JsonIgnore
   public Duration getDuration() {
     return this.durationInSeconds <= 0 ? Duration.ZERO : Duration.ofSeconds(this.durationInSeconds);
+  }
+
+  @JsonIgnore
+  public boolean isDelayByDateTime() {
+    return StringUtils.isNotBlank(this.releaseDateTime);
+  }
+
+  @JsonIgnore
+  public LocalDateTime getReleaseLocalDateTime() {
+    return LocalDateTime.parse(this.releaseDateTime);
+  }
+
+  @JsonIgnore
+  public boolean isDelayByTimeOfDay() {
+    return StringUtils.isNotBlank(this.releaseTimeOfDay);
+  }
+
+  @JsonIgnore
+  public LocalTime getReleaseLocalTime() {
+    return LocalTime.parse(this.releaseTimeOfDay, TIME_OF_DAY_FORMATTER);
   }
 
   public enum DelayInterruptionType {
@@ -55,16 +93,8 @@ public class DelayNode extends WorkflowNode {
       return signal != null && signal.getType() == DelayInterruptionType.IMMEDIATE_RELEASE;
     }
 
-    public static boolean hasConfigModifiedSignal(DelayInterruptionSignal signal) {
-      return signal != null && signal.getType() == DelayInterruptionType.CONFIG_MODIFIED;
-    }
-
     public static boolean requireImmediateIntervention(DelayInterruptionSignal signal) {
-      if (signal == null) {
-        return false;
-      }
-
-      return signal.getType() != DelayInterruptionType.CONFIG_MODIFIED;
+      return signal != null && signal.getType() != DelayInterruptionType.CONFIG_MODIFIED;
     }
   }
 }

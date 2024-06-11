@@ -6,11 +6,11 @@ import org.slf4j.Logger;
 
 @WorkflowImpl(taskQueues = CancellingWorkflow.QUEUE_NAME)
 public class CancellingWorkflowImpl implements CancellingWorkflow {
-  private static final Logger logger = Workflow.getLogger(CancellingWorkflowImpl.class);
+  private static final Logger LOGGER = Workflow.getLogger(CancellingWorkflowImpl.class);
 
   @Override
   public String cancel(String workflowIdSuffix) {
-    logger.info("Starting to cancel sleeping workflow");
+    LOGGER.info("Starting to cancel sleeping workflow");
 
     try {
       // If WorkflowId exists, the request will succeed regardless of
@@ -26,7 +26,7 @@ public class CancellingWorkflowImpl implements CancellingWorkflow {
           .cancel();
 
     } catch (Exception ex) {
-      logger.error("Failed to cancel sleepy workflow", ex);
+      LOGGER.error("Failed to cancel sleepy workflow", ex);
       return "CANCELLATION_FAILED";
     }
 
