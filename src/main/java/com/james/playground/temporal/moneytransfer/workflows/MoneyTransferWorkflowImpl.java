@@ -18,7 +18,7 @@ public class MoneyTransferWorkflowImpl implements MoneyTransferWorkflow {
 
   // Inside Workflow implementation, we MUST use Workflow.getLogger to get a logger instance
   // Inside Activity implementation, we can use Lombok logger as usual
-  private static final Logger logger = Workflow.getLogger(MoneyTransferWorkflowImpl.class);
+  private static final Logger LOGGER = Workflow.getLogger(MoneyTransferWorkflowImpl.class);
 
   private static final RetryOptions RETRY_OPTIONS = RetryOptions.newBuilder()
       .setInitialInterval(Duration.ofSeconds(1)) // Wait duration before first retry
@@ -57,7 +57,7 @@ public class MoneyTransferWorkflowImpl implements MoneyTransferWorkflow {
       promise.get();
 
     } catch (Exception ex) {
-      logger.error("Transaction failed, error: {}", ex.getMessage());
+      LOGGER.error("Transaction failed, error: {}", ex.getMessage());
       return "WITHDRAW_FAILED";
     }
 
@@ -88,11 +88,11 @@ public class MoneyTransferWorkflowImpl implements MoneyTransferWorkflow {
       //          details.isShouldSucceed()
       //      );
 
-      logger.info("Transaction completed");
+      LOGGER.info("Transaction completed");
       return "TRANSFER_COMPLETED_" + details.getAmountToTransfer();
 
     } catch (Exception ex) {
-      logger.error("Transaction failed, error: {}", ex.getMessage());
+      LOGGER.error("Transaction failed, error: {}", ex.getMessage());
     }
 
     try {
@@ -112,16 +112,16 @@ public class MoneyTransferWorkflowImpl implements MoneyTransferWorkflow {
         );
       }
 
-      logger.info("Failure compensated");
+      LOGGER.info("Failure compensated");
       return "FAILURE_COMPENSATED";
 
     } catch (Exception ex) {
       if (details.isShouldSwallowFailure()) {
-        logger.info("Failure swallowed");
+        LOGGER.info("Failure swallowed");
         return "FAILURE_SWALLOWED";
       }
 
-      logger.error("Compensation failed, error: {}", ex.getMessage());
+      LOGGER.error("Compensation failed, error: {}", ex.getMessage());
       throw ex;
     }
   }

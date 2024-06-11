@@ -3,7 +3,6 @@ package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 import com.james.playground.temporal.dsl.activities.PrinterActivity.PrinterInput;
 import com.james.playground.temporal.dsl.dto.DynamicActivityResult;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
-import com.james.playground.temporal.dsl.language.WorkflowNode;
 import com.james.playground.temporal.dsl.language.nodes.PrinterNode;
 import io.temporal.workflow.Workflow;
 import lombok.NoArgsConstructor;
@@ -13,14 +12,14 @@ import org.slf4j.Logger;
 @Slf4j
 @NoArgsConstructor
 public class PrinterVisitor extends NodeVisitor<PrinterNode> {
-  private static final Logger logger = Workflow.getLogger(PrinterVisitor.class);
+  private static final Logger LOGGER = Workflow.getLogger(PrinterVisitor.class);
 
   public PrinterVisitor(DynamicWorkflowInput input) {
     super(input);
   }
 
   @Override
-  public WorkflowNode visit(PrinterNode node) {
+  public String visit(PrinterNode node) {
     log.info("PrinterNode: {}", node);
 
     DynamicActivityResult result = this.printerActivity.print(
@@ -30,6 +29,6 @@ public class PrinterVisitor extends NodeVisitor<PrinterNode> {
             .build()
     );
 
-    return this.findNodeIgnoringDeletedNodes(result.getNextNodeId());
+    return result.getNextNodeId();
   }
 }

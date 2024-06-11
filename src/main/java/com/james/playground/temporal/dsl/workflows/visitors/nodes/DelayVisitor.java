@@ -1,13 +1,20 @@
 package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 
+import com.james.playground.temporal.dsl.activities.UserActivity.UserInfoInput;
+import com.james.playground.temporal.dsl.activities.UserActivity.UserInfoOutput;
 import com.james.playground.temporal.dsl.activities.UserGroupActivity.UserGroupInput;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
 import com.james.playground.temporal.dsl.language.WorkflowNode;
+import com.james.playground.temporal.dsl.language.WorkflowStore;
 import com.james.playground.temporal.dsl.language.nodes.DelayNode;
 import com.james.playground.temporal.dsl.language.nodes.DelayNode.DelayInterruptionSignal;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -16,8 +23,10 @@ import org.slf4j.Logger;
 @Slf4j
 @NoArgsConstructor
 public class DelayVisitor extends NodeVisitor<DelayNode> {
-  private static final Logger logger = Workflow.getLogger(DelayVisitor.class);
+  private static final Logger LOGGER = Workflow.getLogger(DelayVisitor.class);
+  private static final ZoneId SINGAPORE_TIMEZONE = ZoneId.of("Asia/Singapore");
 
+  private ZoneId userTimezone;
   private DelayNode activeNode;
   private long delayStartTimestamp;
   private DelayInterruptionSignal interruptionSignal;
@@ -27,7 +36,7 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
   }
 
   @Override
-  public WorkflowNode visit(DelayNode node) {
+  public String visit(DelayNode node) {
     log.info("DelayNode: {}", node);
 
     this.activeNode = node;
@@ -39,7 +48,7 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
             .build()
     );
 
-    String nextNodeId = this.doDelay();
+    String nextNodeId = this.doDelay(false);
 
     this.userGroupActivity.removeFromGroup(
         UserGroupInput.builder()
@@ -50,11 +59,11 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
 
     this.resetMarkers();
 
-    return this.findNodeIgnoringDeletedNodes(nextNodeId);
+    return nextNodeId;
   }
 
-  String doDelay() {
-    Duration duration = this.handleSignalAndDecideDelayDuration();
+  String doDelay(boolean hasCompletedFullDelay) {
+    Duration duration = this.handleSignalAndDecideDelayDuration(hasCompletedFullDelay);
 
     if (duration.isZero() || duration.isNegative()) {
       return this.activeNode.getNextNodeId();
@@ -65,16 +74,19 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
 
     log.info("Sleeping for {} seconds", duration.toSeconds());
 
-    Workflow.await(duration, () -> DelayInterruptionSignal.requireImmediateIntervention(this.interruptionSignal));
+    boolean isInterruptedBySignal = Workflow.await(
+        duration,
+        () -> DelayInterruptionSignal.requireImmediateIntervention(this.interruptionSignal)
+    );
 
     if (this.interruptionSignal != null) {
-      return this.doDelay();
+      return this.doDelay(!isInterruptedBySignal);
     }
 
     return this.activeNode.getNextNodeId();
   }
 
-  Duration handleSignalAndDecideDelayDuration() {
+  Duration handleSignalAndDecideDelayDuration(boolean hasCompletedFullDelay) {
     if (DelayInterruptionSignal.hasImmediateReleaseSignal(this.interruptionSignal)) {
       return Duration.ZERO;
     }
@@ -88,10 +100,33 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
     // subsequent visits due to interruptionSignal.
     this.activeNode = (DelayNode) this.findNodeAcceptingDeletedNode(this.activeNode.getId());
 
-    if (this.activeNode.isDeleted()) {
+    // If we already completed full delay, no need further waiting
+    if (hasCompletedFullDelay || this.activeNode.isDeleted()) {
       return Duration.ZERO;
     }
 
+    return this.decideDelayDuration();
+  }
+
+  Duration decideDelayDuration() {
+    if (this.activeNode.isDelayByDuration()) {
+      return this.computeBasicDelayDuration();
+    }
+
+    ZoneId timezone = this.decideTimezone();
+
+    if (this.activeNode.isDelayByDateTime()) {
+      return this.computeDelayDurationByDateTime(timezone);
+    }
+
+    if (this.activeNode.isDelayByTimeOfDay()) {
+      return this.computeDelayDurationByTimeOfDay(timezone);
+    }
+
+    return Duration.ZERO;
+  }
+
+  Duration computeBasicDelayDuration() {
     if (this.isFirstVisit()) {
       return this.activeNode.getDuration();
     }
@@ -102,6 +137,48 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
 
     log.info("Already slept for {} seconds", elapsedDuration.toSeconds());
     return this.activeNode.getDuration().minus(elapsedDuration);
+  }
+
+  ZoneId decideTimezone() {
+    if (!this.activeNode.isShouldReleaseInUserTimezone()) {
+      return SINGAPORE_TIMEZONE;
+    }
+
+    return this.fetchUserTimezoneOnceAndCache();
+  }
+
+  ZoneId fetchUserTimezoneOnceAndCache() {
+    if (this.userTimezone == null) {
+      UserInfoOutput output = this.userActivity.getTimezone(
+          UserInfoInput.builder()
+              .userId(this.input.getUserId())
+              .build()
+      );
+
+      this.userTimezone = output.getTimezone();
+    }
+
+    return this.userTimezone;
+  }
+
+  Duration computeDelayDurationByDateTime(ZoneId timezone) {
+    LocalDateTime localDateTime = this.activeNode.getReleaseLocalDateTime();
+    ZonedDateTime zonedDateTime = localDateTime.atZone(timezone);
+
+    return Duration.between(Instant.ofEpochMilli(Workflow.currentTimeMillis()), zonedDateTime);
+  }
+
+  Duration computeDelayDurationByTimeOfDay(ZoneId timezone) {
+    LocalTime     time        = this.activeNode.getReleaseLocalTime();
+    Instant       now         = Instant.ofEpochMilli(Workflow.currentTimeMillis());
+    ZonedDateTime nowDateTime = ZonedDateTime.ofInstant(now, timezone);
+
+    ZonedDateTime targetDateTime = nowDateTime.withHour(time.getHour()).withMinute(time.getMinute());
+    if (targetDateTime.isBefore(nowDateTime)) {
+      targetDateTime = targetDateTime.plusDays(1);
+    }
+
+    return Duration.between(nowDateTime, targetDateTime);
   }
 
   public void interruptDelay(DelayInterruptionSignal signal) {
@@ -146,5 +223,12 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
     this.activeNode = null;
     this.delayStartTimestamp = 0;
     this.interruptionSignal = null;
+  }
+
+  WorkflowNode findNodeAcceptingDeletedNode(String nodeId) {
+    return Workflow.sideEffect(
+        WorkflowNode.class,
+        () -> WorkflowStore.getInstance().findNodeAcceptingDeletedNode(this.input.getWorkflowDefinitionId(), nodeId)
+    );
   }
 }

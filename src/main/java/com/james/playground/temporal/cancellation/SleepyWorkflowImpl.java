@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 
 @WorkflowImpl(taskQueues = SleepyWorkflow.QUEUE_NAME)
 public class SleepyWorkflowImpl implements SleepyWorkflow {
-  private static final Logger logger = Workflow.getLogger(SleepyWorkflowImpl.class);
+  private static final Logger LOGGER = Workflow.getLogger(SleepyWorkflowImpl.class);
 
   @Override
   public String sleep() {
@@ -16,17 +16,17 @@ public class SleepyWorkflowImpl implements SleepyWorkflow {
     // need to perform cleanup. Without it, the workflow
     // will still appear as cancelled in the Temporal Web UI.
     try {
-      logger.info("Going to sleep for an hour");
+      LOGGER.info("Going to sleep for an hour");
 
       Workflow.sleep(60 * 60 * 1000);
 
       return "SLEEP_COMPLETED";
 
     } catch (CanceledFailure ex) {
-      logger.info("Cancellation triggered");
+      LOGGER.info("Cancellation triggered");
 
       CancellationScope detached = Workflow.newDetachedCancellationScope(() -> {
-        logger.info("Performing cleanup upon cancellation");
+        LOGGER.info("Performing cleanup upon cancellation");
       });
 
       detached.run();

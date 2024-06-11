@@ -22,7 +22,7 @@ public class TransitNode extends WorkflowNode {
   }
 
   @Override
-  public WorkflowNode accept(DelegatingVisitor visitor) {
+  public String accept(DelegatingVisitor visitor) {
     return visitor.visit(this);
   }
 }

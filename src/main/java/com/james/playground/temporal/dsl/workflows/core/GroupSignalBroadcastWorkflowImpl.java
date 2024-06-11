@@ -33,7 +33,7 @@ public class GroupSignalBroadcastWorkflowImpl implements GroupSignalBroadcastWor
       .build();
   // There's a hard limit of 2000 pending signal at any given points
   private static final int SIGNAL_BATCH_SIZE = 2000;
-  private static final Logger logger = Workflow.getLogger(GroupSignalBroadcastWorkflowImpl.class);
+  private static final Logger LOGGER = Workflow.getLogger(GroupSignalBroadcastWorkflowImpl.class);
   protected final UserGroupActivity userGroupActivity = Workflow.newActivityStub(
       UserGroupActivity.class,
       ActivityOptions.newBuilder(ACTIVITY_OPTIONS)
@@ -50,15 +50,15 @@ public class GroupSignalBroadcastWorkflowImpl implements GroupSignalBroadcastWor
   }
 
   <T> void broadcastInActivity(GroupSignalInput<T> input) {
-    logger.info("Started broadcasting Signal from Activity, input: {}", input);
+    LOGGER.info("Started broadcasting Signal from Activity, input: {}", input);
 
     this.userGroupActivity.broadcastSignalToGroup(input);
 
-    logger.info("Completed broadcasting Signal from Activity");
+    LOGGER.info("Completed broadcasting Signal from Activity");
   }
 
   <T> void broadcastInWorkflow(GroupSignalInput<T> input) {
-    logger.info("Started broadcasting Signal from Workflow, input: {}", input);
+    LOGGER.info("Started broadcasting Signal from Workflow, input: {}", input);
 
     GetUserIdsInGroupOutput output = this.userGroupActivity.getUserIdsInGroup(
         GetUserIdsInGroupInput.builder()
@@ -75,7 +75,7 @@ public class GroupSignalBroadcastWorkflowImpl implements GroupSignalBroadcastWor
     int endIdx   = SIGNAL_BATCH_SIZE;
 
     while (startIdx < userIds.size()) {
-      logger.info("Working on index range: {} - {}", startIdx, endIdx);
+      LOGGER.info("Working on index range: {} - {}", startIdx, endIdx);
 
       List<Promise<Void>> futures = new ArrayList<>();
 
@@ -87,7 +87,7 @@ public class GroupSignalBroadcastWorkflowImpl implements GroupSignalBroadcastWor
         // https://community.temporal.io/t/workflowrejectedexecutionerror-whats-the-cause-and-how-to-solve/871/2?u=jamestran
         Promise<Void> future = Async.procedure(receiver::signal, input.getSignalName(), input.getPayload())
             .exceptionally(ex -> {
-              logger.info(
+              LOGGER.info(
                   "Failed to send Signal, user ID: {}, workflow ID: {}, error: {}",
                   userId, input.getWorkflowIdPrefix() + userId, ex.getMessage()
               );
@@ -105,7 +105,7 @@ public class GroupSignalBroadcastWorkflowImpl implements GroupSignalBroadcastWor
     }
 
     if (!output.isHasNext()) {
-      logger.info("Completed broadcasting Signal from Workflow");
+      LOGGER.info("Completed broadcasting Signal from Workflow");
       return;
     }
 
@@ -121,6 +121,6 @@ public class GroupSignalBroadcastWorkflowImpl implements GroupSignalBroadcastWor
     );
 
     // Does not get printed
-    logger.info("TEST TO SEE IF THIS LINE IS EXECUTED");
+    LOGGER.info("TEST TO SEE IF THIS LINE IS EXECUTED");
   }
 }

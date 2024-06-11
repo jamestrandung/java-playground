@@ -2,7 +2,6 @@ package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 
 import com.james.playground.temporal.dsl.activities.UserGroupActivity.UserGroupInput;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
-import com.james.playground.temporal.dsl.language.WorkflowNode;
 import com.james.playground.temporal.dsl.language.nodes.RandomDistributionNode;
 import io.temporal.workflow.Workflow;
 import java.util.List;
@@ -13,14 +12,14 @@ import org.slf4j.Logger;
 @Slf4j
 @NoArgsConstructor
 public class RandomDistributionVisitor extends NodeVisitor<RandomDistributionNode> {
-  private static final Logger logger = Workflow.getLogger(RandomDistributionVisitor.class);
+  private static final Logger LOGGER = Workflow.getLogger(RandomDistributionVisitor.class);
 
   public RandomDistributionVisitor(DynamicWorkflowInput input) {
     super(input);
   }
 
   @Override
-  public WorkflowNode visit(RandomDistributionNode node) {
+  public String visit(RandomDistributionNode node) {
     List<String> nextNodeIds = node.getNextNodeIds();
 
     int randomIdx = Workflow.newRandom().nextInt(nextNodeIds.size());
@@ -32,6 +31,6 @@ public class RandomDistributionVisitor extends NodeVisitor<RandomDistributionNod
             .build()
     );
 
-    return this.findNodeIgnoringDeletedNodes(nextNodeIds.get(randomIdx));
+    return nextNodeIds.get(randomIdx);
   }
 }

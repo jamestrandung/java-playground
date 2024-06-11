@@ -1,10 +1,10 @@
 package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 
 import com.james.playground.temporal.dsl.activities.PrinterActivity;
+import com.james.playground.temporal.dsl.activities.UserActivity;
 import com.james.playground.temporal.dsl.activities.UserGroupActivity;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
 import com.james.playground.temporal.dsl.language.WorkflowNode;
-import com.james.playground.temporal.dsl.language.WorkflowStore;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.workflow.Workflow;
@@ -45,21 +45,15 @@ public abstract class NodeVisitor<T extends WorkflowNode> {
       null
   );
 
+  protected final UserActivity userActivity = Workflow.newActivityStub(
+      UserActivity.class,
+      ActivityOptions.newBuilder(ACTIVITY_OPTIONS)
+          .setTaskQueue(UserActivity.QUEUE_NAME)
+          .build(),
+      null
+  );
+
   protected DynamicWorkflowInput input;
 
-  public abstract WorkflowNode visit(T node);
-
-  public WorkflowNode findNodeIgnoringDeletedNodes(String nodeId) {
-    return Workflow.sideEffect(
-        WorkflowNode.class,
-        () -> WorkflowStore.getInstance().findNodeIgnoringDeletedNodes(this.input.getWorkflowDefinitionId(), nodeId)
-    );
-  }
-
-  public WorkflowNode findNodeAcceptingDeletedNode(String nodeId) {
-    return Workflow.sideEffect(
-        WorkflowNode.class,
-        () -> WorkflowStore.getInstance().findNodeAcceptingDeletedNode(this.input.getWorkflowDefinitionId(), nodeId)
-    );
-  }
+  public abstract String visit(T node);
 }

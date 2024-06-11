@@ -19,7 +19,7 @@ public class BranchNode extends WorkflowNode {
   private List<Condition> conditions;
 
   @Override
-  public WorkflowNode accept(DelegatingVisitor visitor) {
+  public String accept(DelegatingVisitor visitor) {
     return visitor.visit(this);
   }
 }
