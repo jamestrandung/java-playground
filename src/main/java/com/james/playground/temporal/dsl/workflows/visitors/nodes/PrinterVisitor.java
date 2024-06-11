@@ -3,7 +3,6 @@ package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 import com.james.playground.temporal.dsl.activities.PrinterActivity.PrinterInput;
 import com.james.playground.temporal.dsl.dto.DynamicActivityResult;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
-import com.james.playground.temporal.dsl.language.WorkflowNode;
 import com.james.playground.temporal.dsl.language.nodes.PrinterNode;
 import io.temporal.workflow.Workflow;
 import lombok.NoArgsConstructor;
@@ -20,7 +19,7 @@ public class PrinterVisitor extends NodeVisitor<PrinterNode> {
   }
 
   @Override
-  public WorkflowNode visit(PrinterNode node) {
+  public String visit(PrinterNode node) {
     log.info("PrinterNode: {}", node);
 
     DynamicActivityResult result = this.printerActivity.print(
@@ -30,6 +29,6 @@ public class PrinterVisitor extends NodeVisitor<PrinterNode> {
             .build()
     );
 
-    return this.findNodeIgnoringDeletedNodes(result.getNextNodeId());
+    return result.getNextNodeId();
   }
 }

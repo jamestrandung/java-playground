@@ -21,7 +21,7 @@ public class DelayNode extends WorkflowNode {
   private long groupIdForActiveUsers;
 
   @Override
-  public WorkflowNode accept(DelegatingVisitor visitor) {
+  public String accept(DelegatingVisitor visitor) {
     return visitor.visit(this);
   }
 

@@ -18,7 +18,7 @@ public class PrinterNode extends WorkflowNode {
   private String text;
 
   @Override
-  public WorkflowNode accept(DelegatingVisitor visitor) {
+  public String accept(DelegatingVisitor visitor) {
     return visitor.visit(this);
   }
 }

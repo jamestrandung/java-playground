@@ -52,7 +52,7 @@ public abstract class WorkflowNode {
   private boolean modifiable;
   private boolean activeInProduction;
 
-  public abstract WorkflowNode accept(DelegatingVisitor visitor);
+  public abstract String accept(DelegatingVisitor visitor);
 
   @JsonIgnore
   public boolean isDeleted() {

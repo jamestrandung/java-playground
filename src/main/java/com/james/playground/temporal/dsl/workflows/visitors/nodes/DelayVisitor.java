@@ -3,6 +3,7 @@ package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 import com.james.playground.temporal.dsl.activities.UserGroupActivity.UserGroupInput;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
 import com.james.playground.temporal.dsl.language.WorkflowNode;
+import com.james.playground.temporal.dsl.language.WorkflowStore;
 import com.james.playground.temporal.dsl.language.nodes.DelayNode;
 import com.james.playground.temporal.dsl.language.nodes.DelayNode.DelayInterruptionSignal;
 import io.temporal.workflow.Workflow;
@@ -27,7 +28,7 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
   }
 
   @Override
-  public WorkflowNode visit(DelayNode node) {
+  public String visit(DelayNode node) {
     log.info("DelayNode: {}", node);
 
     this.activeNode = node;
@@ -50,7 +51,7 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
 
     this.resetMarkers();
 
-    return this.findNodeIgnoringDeletedNodes(nextNodeId);
+    return nextNodeId;
   }
 
   String doDelay() {
@@ -146,5 +147,12 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
     this.activeNode = null;
     this.delayStartTimestamp = 0;
     this.interruptionSignal = null;
+  }
+
+  WorkflowNode findNodeAcceptingDeletedNode(String nodeId) {
+    return Workflow.sideEffect(
+        WorkflowNode.class,
+        () -> WorkflowStore.getInstance().findNodeAcceptingDeletedNode(this.input.getWorkflowDefinitionId(), nodeId)
+    );
   }
 }

@@ -2,7 +2,6 @@ package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 
 import com.james.playground.temporal.dsl.activities.UserGroupActivity.UserGroupInput;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
-import com.james.playground.temporal.dsl.language.WorkflowNode;
 import com.james.playground.temporal.dsl.language.nodes.RandomDistributionNode;
 import io.temporal.workflow.Workflow;
 import java.util.List;
@@ -20,7 +19,7 @@ public class RandomDistributionVisitor extends NodeVisitor<RandomDistributionNod
   }
 
   @Override
-  public WorkflowNode visit(RandomDistributionNode node) {
+  public String visit(RandomDistributionNode node) {
     List<String> nextNodeIds = node.getNextNodeIds();
 
     int randomIdx = Workflow.newRandom().nextInt(nextNodeIds.size());
@@ -32,6 +31,6 @@ public class RandomDistributionVisitor extends NodeVisitor<RandomDistributionNod
             .build()
     );
 
-    return this.findNodeIgnoringDeletedNodes(nextNodeIds.get(randomIdx));
+    return nextNodeIds.get(randomIdx);
   }
 }

@@ -1,7 +1,6 @@
 package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
-import com.james.playground.temporal.dsl.language.WorkflowNode;
 import com.james.playground.temporal.dsl.language.nodes.TransitNode;
 import io.temporal.workflow.Workflow;
 import lombok.NoArgsConstructor;
@@ -18,13 +17,13 @@ public class TransitVisitor extends NodeVisitor<TransitNode> {
   }
 
   @Override
-  public WorkflowNode visit(TransitNode node) {
+  public String visit(TransitNode node) {
     log.info("TransitNode: {}", node);
 
     if (node.isEndNode()) {
       return null;
     }
 
-    return this.findNodeIgnoringDeletedNodes(node.getNextNodeId());
+    return node.getNextNodeId();
   }
 }
