@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper.Builder;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.james.playground.temporal.dsl.language.WorkflowNode;
+import com.james.playground.temporal.dsl.workflows.MarketingWorkflow;
 import io.temporal.client.WorkflowClientOptions;
 import io.temporal.common.converter.DefaultDataConverter;
 import io.temporal.common.converter.JacksonJsonPayloadConverter;
@@ -33,9 +34,9 @@ public class TemporalConfigs {
           @Nonnull String workerName,
           @Nonnull String taskQueue
       ) {
-        //        if (taskQueue.equals("CustomizeTaskQueue")) {
-        //          optionsBuilder.setLocalActivityWorkerOnly(true);
-        //        }
+        if (taskQueue.equals(MarketingWorkflow.QUEUE_NAME)) {
+          optionsBuilder.setLocalActivityWorkerOnly(true);
+        }
 
         return optionsBuilder;
       }

@@ -1,5 +1,6 @@
 package com.james.playground.temporal.dsl.activities;
 
+import com.james.playground.temporal.dsl.workflows.MarketingWorkflow;
 import io.temporal.spring.boot.ActivityImpl;
 import java.time.ZoneOffset;
 import lombok.extern.slf4j.Slf4j;
@@ -7,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@ActivityImpl(taskQueues = UserActivity.QUEUE_NAME)
+@ActivityImpl(taskQueues = {UserActivity.QUEUE_NAME, MarketingWorkflow.QUEUE_NAME})
 public class UserActivityImpl implements UserActivity {
   @Override
   public UserInfoOutput getTimezone(UserInfoInput input) {

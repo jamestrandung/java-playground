@@ -1,5 +1,6 @@
 package com.james.playground.temporal.dsl.activities;
 
+import com.james.playground.temporal.dsl.workflows.MarketingWorkflow;
 import com.james.playground.temporal.dsl.workflows.core.GroupSignalBroadcastWorkflow.GroupSignalInput;
 import com.james.playground.temporal.utils.MiscUtils;
 import io.temporal.activity.Activity;
@@ -20,7 +21,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@ActivityImpl(taskQueues = UserGroupActivity.QUEUE_NAME)
+@ActivityImpl(taskQueues = {UserGroupActivity.QUEUE_NAME, MarketingWorkflow.QUEUE_NAME})
 public class UserGroupActivityImpl implements UserGroupActivity {
   private final Map<Long, AtomicInteger> counters = new ConcurrentHashMap<>();
   @Autowired

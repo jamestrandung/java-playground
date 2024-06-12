@@ -6,6 +6,7 @@ import com.james.playground.temporal.dsl.activities.UserGroupActivity;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
 import com.james.playground.temporal.dsl.language.WorkflowNode;
 import io.temporal.activity.ActivityOptions;
+import io.temporal.activity.LocalActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
@@ -49,6 +50,22 @@ public abstract class NodeVisitor<T extends WorkflowNode> {
       UserActivity.class,
       ActivityOptions.newBuilder(ACTIVITY_OPTIONS)
           .setTaskQueue(UserActivity.QUEUE_NAME)
+          .build(),
+      null
+  );
+
+  protected final UserGroupActivity localUserGroupActivity = Workflow.newLocalActivityStub(
+      UserGroupActivity.class,
+      LocalActivityOptions.newBuilder()
+          .setStartToCloseTimeout(Duration.ofSeconds(5))
+          .build(),
+      null
+  );
+
+  protected final UserActivity localUserActivity = Workflow.newLocalActivityStub(
+      UserActivity.class,
+      LocalActivityOptions.newBuilder()
+          .setStartToCloseTimeout(Duration.ofSeconds(5))
           .build(),
       null
   );

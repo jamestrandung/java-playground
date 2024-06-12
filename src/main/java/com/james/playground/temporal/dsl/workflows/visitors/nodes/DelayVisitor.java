@@ -37,29 +37,39 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
 
   @Override
   public String visit(DelayNode node) {
-    log.info("DelayNode: {}", node);
+    try {
+      log.info("DelayNode: {}", node);
 
-    this.activeNode = node;
+      this.activeNode = node;
 
-    this.userGroupActivity.addToGroup(
-        UserGroupInput.builder()
-            .userId(this.input.getUserId())
-            .groupId(this.activeNode.getGroupIdForActiveUsers())
-            .build()
-    );
+      // Move on immediately if possible without
+      // executing user group activities
+      Duration duration = this.decideDelayDuration();
+      if (duration.isZero() || duration.isNegative()) {
+        return this.activeNode.getNextNodeId();
+      }
 
-    String nextNodeId = this.doDelay(false);
+      this.localUserGroupActivity.addToGroup(
+          UserGroupInput.builder()
+              .userId(this.input.getUserId())
+              .groupId(this.activeNode.getGroupIdForActiveUsers())
+              .build()
+      );
 
-    this.userGroupActivity.removeFromGroup(
-        UserGroupInput.builder()
-            .userId(this.input.getUserId())
-            .groupId(this.activeNode.getGroupIdForActiveUsers())
-            .build()
-    );
+      String nextNodeId = this.doDelay(false);
 
-    this.resetMarkers();
+      this.localUserGroupActivity.removeFromGroup(
+          UserGroupInput.builder()
+              .userId(this.input.getUserId())
+              .groupId(this.activeNode.getGroupIdForActiveUsers())
+              .build()
+      );
 
-    return nextNodeId;
+      return nextNodeId;
+
+    } finally {
+      this.resetMarkers();
+    }
   }
 
   String doDelay(boolean hasCompletedFullDelay) {
@@ -149,7 +159,7 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
 
   ZoneId fetchUserTimezoneOnceAndCache() {
     if (this.userTimezone == null) {
-      UserInfoOutput output = this.userActivity.getTimezone(
+      UserInfoOutput output = this.localUserActivity.getTimezone(
           UserInfoInput.builder()
               .userId(this.input.getUserId())
               .build()
