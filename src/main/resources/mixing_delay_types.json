@@ -28,7 +28,7 @@
     "nextNodeId": "4",
     "modifiable": true,
     "activeInProduction": true,
-    "releaseTimeOfDay": "16:26",
+    "releaseTimeOfDay": "10:09",
     "shouldReleaseInUserTimezone": true
   },
   "4": {
@@ -45,7 +45,7 @@
     "nextNodeId": "6",
     "modifiable": true,
     "activeInProduction": true,
-    "releaseDateTime": "2024-06-11T17:50:00",
+    "releaseDateTime": "2024-06-12T11:10:00+08:00",
     "shouldReleaseInUserTimezone": false
   },
   "6": {
@@ -62,7 +62,7 @@
     "nextNodeId": "8",
     "modifiable": true,
     "activeInProduction": true,
-    "releaseDateTime": "2024-06-11T16:51:00",
+    "releaseDateTime": "2024-06-12T10:11:00+08:00",
     "shouldReleaseInUserTimezone": true
   },
   "8": {

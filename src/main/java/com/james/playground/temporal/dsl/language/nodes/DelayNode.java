@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.james.playground.temporal.dsl.language.WorkflowNode;
 import com.james.playground.temporal.dsl.workflows.visitors.DelegatingVisitor;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,7 +27,7 @@ public class DelayNode extends WorkflowNode {
   private int durationInSeconds;
 
   // Delay by date time
-  private String releaseDateTime; // ISO format: yyyy-MM-dd'T'HH:mm:ss
+  private String releaseDateTime; // ISO format: yyyy-MM-dd'T'HH:mm:ss.SSSXXX
   private String releaseTimeOfDay;
   private boolean shouldReleaseInUserTimezone;
 
@@ -54,8 +54,8 @@ public class DelayNode extends WorkflowNode {
   }
 
   @JsonIgnore
-  public LocalDateTime getReleaseLocalDateTime() {
-    return LocalDateTime.parse(this.releaseDateTime);
+  public ZonedDateTime getReleaseZonedDateTime() {
+    return ZonedDateTime.parse(this.releaseDateTime, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
   }
 
   @JsonIgnore

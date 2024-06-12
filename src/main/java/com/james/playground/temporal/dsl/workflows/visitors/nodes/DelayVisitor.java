@@ -162,8 +162,11 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
   }
 
   Duration computeDelayDurationByDateTime(ZoneId timezone) {
-    LocalDateTime localDateTime = this.activeNode.getReleaseLocalDateTime();
-    ZonedDateTime zonedDateTime = localDateTime.atZone(timezone);
+    ZonedDateTime zonedDateTime = this.activeNode.getReleaseZonedDateTime();
+    if (this.activeNode.isShouldReleaseInUserTimezone()) {
+      LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
+      zonedDateTime = localDateTime.atZone(timezone);
+    }
 
     return Duration.between(Instant.ofEpochMilli(Workflow.currentTimeMillis()), zonedDateTime);
   }
@@ -178,7 +181,12 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
       targetDateTime = targetDateTime.plusDays(1);
     }
 
-    return Duration.between(nowDateTime, targetDateTime);
+    // .withSecond(0) has to be done here because if we do it when we
+    // create targetDateTime above, targetDateTime might fall behind
+    // nowDateTime when now happens to be the configured release time.
+    // E.g. release time is 10:05, now is 10:05:25. This allows us to
+    // skip the delay immediately instead of waiting 1 full day.
+    return Duration.between(nowDateTime, targetDateTime.withSecond(0));
   }
 
   public void interruptDelay(DelayInterruptionSignal signal) {
