@@ -21,14 +21,12 @@ import org.apache.commons.lang3.StringUtils;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class DelayNode extends WorkflowNode {
-  private static final DateTimeFormatter TIME_OF_DAY_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
-
   // Delay by duration
   private int durationInSeconds;
 
   // Delay by date time
   private String releaseDateTime; // ISO format: yyyy-MM-dd'T'HH:mm:ss.SSSXXX
-  private String releaseTimeOfDay;
+  private String releaseTimeOfDay; // HH:mm
   private boolean shouldReleaseInUserTimezone;
 
   private long groupIdForActiveUsers;
@@ -65,7 +63,7 @@ public class DelayNode extends WorkflowNode {
 
   @JsonIgnore
   public LocalTime getReleaseLocalTime() {
-    return LocalTime.parse(this.releaseTimeOfDay, TIME_OF_DAY_FORMATTER);
+    return LocalTime.parse(this.releaseTimeOfDay, DateTimeFormatter.ISO_LOCAL_TIME);
   }
 
   public enum DelayInterruptionType {
