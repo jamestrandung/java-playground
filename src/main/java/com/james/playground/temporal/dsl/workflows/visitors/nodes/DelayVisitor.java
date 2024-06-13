@@ -4,8 +4,8 @@ import com.james.playground.temporal.dsl.activities.UserActivity.UserInfoInput;
 import com.james.playground.temporal.dsl.activities.UserActivity.UserInfoOutput;
 import com.james.playground.temporal.dsl.activities.UserGroupActivity.UserGroupInput;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
-import com.james.playground.temporal.dsl.language.WorkflowNode;
-import com.james.playground.temporal.dsl.language.WorkflowStore;
+import com.james.playground.temporal.dsl.language.core.WorkflowDefinition;
+import com.james.playground.temporal.dsl.language.core.WorkflowNode;
 import com.james.playground.temporal.dsl.language.nodes.DelayNode;
 import com.james.playground.temporal.dsl.language.nodes.DelayNode.DelayInterruptionSignal;
 import io.temporal.workflow.Workflow;
@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.function.Supplier;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -26,13 +27,19 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
   private static final Logger LOGGER = Workflow.getLogger(DelayVisitor.class);
   private static final ZoneId SINGAPORE_TIMEZONE = ZoneId.of("Asia/Singapore");
 
+  private Supplier<WorkflowDefinition> workflowDefinitionSupplier;
+
   private ZoneId userTimezone;
   private DelayNode activeNode;
   private long delayStartTimestamp;
   private DelayInterruptionSignal interruptionSignal;
 
-  public DelayVisitor(DynamicWorkflowInput input) {
+  public DelayVisitor(
+      DynamicWorkflowInput input,
+      Supplier<WorkflowDefinition> workflowDefinitionSupplier
+  ) {
     super(input);
+    this.workflowDefinitionSupplier = workflowDefinitionSupplier;
   }
 
   @Override
@@ -246,7 +253,8 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
   WorkflowNode findNodeAcceptingDeletedNode(String nodeId) {
     return Workflow.sideEffect(
         WorkflowNode.class,
-        () -> WorkflowStore.getInstance().findNodeAcceptingDeletedNode(this.input.getWorkflowDefinitionId(), nodeId)
+        () -> this.workflowDefinitionSupplier.get()
+            .findNodeAcceptingDeletedNode(nodeId)
     );
   }
 }

@@ -1,4 +1,4 @@
-package com.james.playground.temporal.dsl.language;
+package com.james.playground.temporal.dsl.language.core;
 
 public class ConditionType {
   public static final String PROPERTY_NAME = "@type";

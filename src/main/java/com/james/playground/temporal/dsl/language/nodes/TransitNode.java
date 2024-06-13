@@ -1,7 +1,8 @@
 package com.james.playground.temporal.dsl.language.nodes;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.james.playground.temporal.dsl.language.WorkflowNode;
+import com.james.playground.temporal.dsl.language.core.NodeType;
+import com.james.playground.temporal.dsl.language.core.WorkflowNode;
 import com.james.playground.temporal.dsl.workflows.visitors.DelegatingVisitor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -24,5 +25,10 @@ public class TransitNode extends WorkflowNode {
   @Override
   public String accept(DelegatingVisitor visitor) {
     return visitor.visit(this);
+  }
+
+  @Override
+  public String getType() {
+    return NodeType.TRANSIT;
   }
 }

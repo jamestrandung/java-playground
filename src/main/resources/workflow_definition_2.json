@@ -1,39 +1,47 @@
 {
-  "START": {
-    "@type": "TRANSIT",
-    "id": "START",
-    "nextNodeId": "1",
-    "modifiable": false,
-    "activeInProduction": true
+  "id": "workflowDefinitionId",
+  "context": {
+    "enrollmentCondition": null,
+    "exitCondition": null,
+    "shouldWithdrawIfEnrollmentConditionNotMet": false
   },
-  "1": {
-    "@type": "DELAY",
-    "id": "1",
-    "nextNodeId": "2",
-    "modifiable": true,
-    "activeInProduction": true,
-    "durationInSeconds": 5
-  },
-  "2": {
-    "@type": "PRINTER",
-    "id": "2",
-    "nextNodeId": "3",
-    "modifiable": true,
-    "activeInProduction": true,
-    "text": "Hello, Another World!"
-  },
-  "3": {
-    "@type": "DELAY",
-    "id": "3",
-    "nextNodeId": "END",
-    "modifiable": true,
-    "activeInProduction": true,
-    "durationInSeconds": 2
-  },
-  "END": {
-    "@type": "TRANSIT",
-    "id": "END",
-    "modifiable": false,
-    "activeInProduction": true
+  "nodes": {
+    "START": {
+      "@type": "TRANSIT",
+      "id": "START",
+      "nextNodeId": "1",
+      "modifiable": false,
+      "activeInProduction": true
+    },
+    "1": {
+      "@type": "DELAY",
+      "id": "1",
+      "nextNodeId": "2",
+      "modifiable": true,
+      "activeInProduction": true,
+      "durationInSeconds": 5
+    },
+    "2": {
+      "@type": "PRINTER",
+      "id": "2",
+      "nextNodeId": "3",
+      "modifiable": true,
+      "activeInProduction": true,
+      "text": "Hello, Another World!"
+    },
+    "3": {
+      "@type": "DELAY",
+      "id": "3",
+      "nextNodeId": "END",
+      "modifiable": true,
+      "activeInProduction": true,
+      "durationInSeconds": 2
+    },
+    "END": {
+      "@type": "TRANSIT",
+      "id": "END",
+      "modifiable": false,
+      "activeInProduction": true
+    }
   }
 }

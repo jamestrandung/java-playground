@@ -1,4 +1,4 @@
-package com.james.playground.temporal.dsl.language;
+package com.james.playground.temporal.dsl.language.core;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

@@ -4,7 +4,7 @@ import com.james.playground.temporal.dsl.activities.PrinterActivity;
 import com.james.playground.temporal.dsl.activities.UserActivity;
 import com.james.playground.temporal.dsl.activities.UserGroupActivity;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
-import com.james.playground.temporal.dsl.language.WorkflowNode;
+import com.james.playground.temporal.dsl.language.core.WorkflowNode;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.activity.LocalActivityOptions;
 import io.temporal.common.RetryOptions;

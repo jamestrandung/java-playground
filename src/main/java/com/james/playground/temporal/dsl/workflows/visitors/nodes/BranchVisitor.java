@@ -2,8 +2,8 @@ package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 
 import com.james.playground.temporal.dsl.activities.UserGroupActivity.UserGroupInput;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
-import com.james.playground.temporal.dsl.language.Condition;
 import com.james.playground.temporal.dsl.language.conditions.GroupMembershipCondition;
+import com.james.playground.temporal.dsl.language.core.Condition;
 import com.james.playground.temporal.dsl.language.nodes.BranchNode;
 import io.temporal.workflow.Workflow;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +28,12 @@ public class BranchVisitor extends NodeVisitor<BranchNode> {
     return node.getNextNodeId();
   }
 
+  public boolean isConditionMet(Condition condition) {
+    return condition != null && condition.accept(this);
+  }
+
   public boolean visit(GroupMembershipCondition condition) {
-    return this.userGroupActivity.isUserInGroup(
+    return this.localUserGroupActivity.isUserInGroup(
         UserGroupInput.builder()
             .userId(this.input.getUserId())
             .groupId(condition.getGroupId())

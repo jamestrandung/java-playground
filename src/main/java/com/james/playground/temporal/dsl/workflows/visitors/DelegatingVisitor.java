@@ -1,13 +1,17 @@
 package com.james.playground.temporal.dsl.workflows.visitors;
 
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
+import com.james.playground.temporal.dsl.language.core.WorkflowDefinition;
 import com.james.playground.temporal.dsl.workflows.visitors.nodes.BranchVisitor;
 import com.james.playground.temporal.dsl.workflows.visitors.nodes.DelayVisitor;
 import com.james.playground.temporal.dsl.workflows.visitors.nodes.PrinterVisitor;
 import com.james.playground.temporal.dsl.workflows.visitors.nodes.RandomDistributionVisitor;
 import com.james.playground.temporal.dsl.workflows.visitors.nodes.TransitVisitor;
+import java.util.function.Supplier;
+import lombok.Getter;
 import lombok.experimental.Delegate;
 
+@Getter
 public class DelegatingVisitor {
   @Delegate
   private final TransitVisitor transitVisitor;
@@ -20,9 +24,12 @@ public class DelegatingVisitor {
   @Delegate
   private final BranchVisitor branchVisitor;
 
-  public DelegatingVisitor(DynamicWorkflowInput input) {
+  public DelegatingVisitor(
+      DynamicWorkflowInput input,
+      Supplier<WorkflowDefinition> workflowDefinitionSupplier
+  ) {
     this.transitVisitor = new TransitVisitor(input);
-    this.delayVisitor = new DelayVisitor(input);
+    this.delayVisitor = new DelayVisitor(input, workflowDefinitionSupplier);
     this.printerVisitor = new PrinterVisitor(input);
     this.randomDistributionVisitor = new RandomDistributionVisitor(input);
     this.branchVisitor = new BranchVisitor(input);

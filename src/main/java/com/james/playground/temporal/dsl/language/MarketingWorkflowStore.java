@@ -2,11 +2,8 @@ package com.james.playground.temporal.dsl.language;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -16,11 +13,11 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class WorkflowStore {
+public class MarketingWorkflowStore {
   private static final ObjectMapper OBJECT_MAPPER;
-  private static final Map<String, WorkflowNode> DEFINITION;
-  private static final Map<String, Map<String, WorkflowNode>> CACHE;
-  private static WorkflowStore INSTANCE;
+  private static final MarketingWorkflowDefinition DEFINITION;
+  private static final Map<String, MarketingWorkflowDefinition> CACHE;
+  private static MarketingWorkflowStore INSTANCE;
 
   static {
     OBJECT_MAPPER = new ObjectMapper();
@@ -50,10 +47,7 @@ public class WorkflowStore {
 
       Resource resource = new ClassPathResource("mixing_delay_types.json");
 
-      DEFINITION = OBJECT_MAPPER.readValue(
-          resource.getInputStream(),
-          TypeFactory.defaultInstance().constructMapType(HashMap.class, String.class, WorkflowNode.class)
-      );
+      DEFINITION = OBJECT_MAPPER.readValue(resource.getInputStream(), MarketingWorkflowDefinition.class);
 
       CACHE = Map.of("workflowDefinitionId", DEFINITION);
 
@@ -62,7 +56,7 @@ public class WorkflowStore {
     }
   }
 
-  public static WorkflowStore getInstance() {
+  public static MarketingWorkflowStore getInstance() {
     return INSTANCE;
   }
 
@@ -71,41 +65,7 @@ public class WorkflowStore {
     INSTANCE = this;
   }
 
-  public Map<String, WorkflowNode> findWorkflowDefinition(String workflowDefinitionId) {
-    return CACHE.getOrDefault(workflowDefinitionId, Collections.emptyMap());
-  }
-
-  public WorkflowNode findNodeIgnoringDeletedNodes(String workflowDefinitionId, String nodeId) {
-    log.info("Looking for alive node, workflowDefinition ID: {}, node ID: {}", workflowDefinitionId, nodeId);
-    Map<String, WorkflowNode> workflowDefinition = this.findWorkflowDefinition(workflowDefinitionId);
-
-    String lookUpNodeId = nodeId;
-    while (true) {
-      WorkflowNode result = workflowDefinition.get(lookUpNodeId);
-
-      if (result == null) {
-        throw new RuntimeException("Node not found, " + "workflowDefinitionId: " + workflowDefinitionId + ", nodeId: " + lookUpNodeId);
-      }
-
-      if (result.isDeleted()) {
-        lookUpNodeId = result.getNextNodeId();
-        continue;
-      }
-
-      return result;
-    }
-  }
-
-  public WorkflowNode findNodeAcceptingDeletedNode(String workflowDefinitionId, String nodeId) {
-    log.info("Looking for node, workflowDefinition ID: {}, node ID: {}", workflowDefinitionId, nodeId);
-    Map<String, WorkflowNode> workflowDefinition = this.findWorkflowDefinition(workflowDefinitionId);
-
-    WorkflowNode result = workflowDefinition.get(nodeId);
-
-    if (result == null) {
-      throw new RuntimeException("Node not found, " + "workflowDefinitionId: " + workflowDefinitionId + ", nodeId: " + nodeId);
-    }
-
-    return result;
+  public MarketingWorkflowDefinition findWorkflowDefinition(String workflowDefinitionId) {
+    return CACHE.getOrDefault(workflowDefinitionId, MarketingWorkflowDefinition.BLANK);
   }
 }

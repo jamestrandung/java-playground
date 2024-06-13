@@ -2,8 +2,8 @@ package com.james.playground.controller.temporal;
 
 import com.james.playground.temporal.dsl.activities.UserGroupActivity;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
-import com.james.playground.temporal.dsl.language.WorkflowNode;
-import com.james.playground.temporal.dsl.language.WorkflowStore;
+import com.james.playground.temporal.dsl.language.MarketingWorkflowStore;
+import com.james.playground.temporal.dsl.language.core.WorkflowNode;
 import com.james.playground.temporal.dsl.language.nodes.DelayNode;
 import com.james.playground.temporal.dsl.language.nodes.DelayNode.DelayInterruptionSignal;
 import com.james.playground.temporal.dsl.language.nodes.DelayNode.DelayInterruptionType;
@@ -32,7 +32,7 @@ public class DSLController {
   @Autowired
   private WorkflowClient workflowClient;
   @Autowired
-  private WorkflowStore workflowStore;
+  private MarketingWorkflowStore marketingWorkflowStore;
   @Autowired
   private UserGroupActivity userGroupActivity;
 
@@ -116,7 +116,8 @@ public class DSLController {
       @RequestParam Long userId,
       @RequestParam String affectedNodeId
   ) {
-    this.workflowStore.findNodeAcceptingDeletedNode(workflowDefinitionId, affectedNodeId)
+    this.marketingWorkflowStore.findWorkflowDefinition(workflowDefinitionId)
+        .findNodeAcceptingDeletedNode(affectedNodeId)
         .setDeletedOn(System.currentTimeMillis());
 
     this.workflowClient.newWorkflowStub(
@@ -138,7 +139,8 @@ public class DSLController {
       @RequestParam String affectedNodeId,
       @RequestParam Integer durationInSeconds
   ) {
-    WorkflowNode node = this.workflowStore.findNodeAcceptingDeletedNode(workflowDefinitionId, affectedNodeId);
+    WorkflowNode node = this.marketingWorkflowStore.findWorkflowDefinition(workflowDefinitionId)
+        .findNodeAcceptingDeletedNode(affectedNodeId);
 
     if (node instanceof DelayNode delayNode) {
       delayNode.setDurationInSeconds(durationInSeconds);
@@ -162,7 +164,8 @@ public class DSLController {
       @RequestParam Long userId,
       @RequestParam String affectedNodeId
   ) {
-    WorkflowNode node = this.workflowStore.findNodeAcceptingDeletedNode(workflowDefinitionId, affectedNodeId);
+    WorkflowNode node = this.marketingWorkflowStore.findWorkflowDefinition(workflowDefinitionId)
+        .findNodeAcceptingDeletedNode(affectedNodeId);
 
     PrinterNode newNode = PrinterNode.builder()
         .id("999")
@@ -172,7 +175,7 @@ public class DSLController {
 
     node.setNextNodeId(newNode.getId());
 
-    this.workflowStore.findWorkflowDefinition(workflowDefinitionId)
+    this.marketingWorkflowStore.findWorkflowDefinition(workflowDefinitionId)
         .put(newNode.getId(), newNode);
 
     this.workflowClient.newWorkflowStub(

@@ -1,6 +1,6 @@
 package com.james.playground.temporal.dsl.language.conditions;
 
-import com.james.playground.temporal.dsl.language.Condition;
+import com.james.playground.temporal.dsl.language.core.Condition;
 import com.james.playground.temporal.dsl.workflows.visitors.nodes.BranchVisitor;
 import lombok.AllArgsConstructor;
 import lombok.Data;

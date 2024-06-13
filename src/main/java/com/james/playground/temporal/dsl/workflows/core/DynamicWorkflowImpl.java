@@ -1,21 +1,24 @@
 package com.james.playground.temporal.dsl.workflows.core;
 
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
-import com.james.playground.temporal.dsl.language.WorkflowNode;
-import com.james.playground.temporal.dsl.language.WorkflowStore;
+import com.james.playground.temporal.dsl.language.core.NodeType;
+import com.james.playground.temporal.dsl.language.core.WorkflowDefinition;
+import com.james.playground.temporal.dsl.language.core.WorkflowNode;
 import com.james.playground.temporal.dsl.language.nodes.DelayNode.DelayInterruptionSignal;
 import com.james.playground.temporal.dsl.language.nodes.TransitNode;
 import com.james.playground.temporal.dsl.workflows.visitors.DelegatingVisitor;
 import io.temporal.workflow.Workflow;
+import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.platform.commons.util.StringUtils;
 import org.slf4j.Logger;
 
 @Slf4j
-public class DynamicWorkflowImpl implements DynamicWorkflow {
+public abstract class DynamicWorkflowImpl implements DynamicWorkflow {
   private static final Logger LOGGER = Workflow.getLogger(DynamicWorkflowImpl.class);
 
   protected DynamicWorkflowInput input;
+  protected Supplier<WorkflowDefinition> workflowDefinitionSupplier;
   protected DelegatingVisitor visitor;
 
   @Override
@@ -27,13 +30,12 @@ public class DynamicWorkflowImpl implements DynamicWorkflow {
       WorkflowNode node = this.findNodeIgnoringDeletedNodes(nextNodeId);
       log.info("Node: {}", node);
 
+      if (!NodeType.TRANSIT.equals(node.getType()) && this.shouldExitEarly()) {
+        break;
+      }
+
       nextNodeId = node.accept(this.visitor);
     }
-  }
-
-  void init(DynamicWorkflowInput input) {
-    this.input = input;
-    this.visitor = new DelegatingVisitor(input);
   }
 
   @Override
@@ -41,10 +43,15 @@ public class DynamicWorkflowImpl implements DynamicWorkflow {
     this.visitor.interruptDelay(signal);
   }
 
+  protected abstract void init(DynamicWorkflowInput input);
+
+  protected abstract boolean shouldExitEarly();
+
   WorkflowNode findNodeIgnoringDeletedNodes(String nodeId) {
     return Workflow.sideEffect(
         WorkflowNode.class,
-        () -> WorkflowStore.getInstance().findNodeIgnoringDeletedNodes(this.input.getWorkflowDefinitionId(), nodeId)
+        () -> this.workflowDefinitionSupplier.get()
+            .findNodeIgnoringDeletedNodes(nodeId)
     );
   }
 }

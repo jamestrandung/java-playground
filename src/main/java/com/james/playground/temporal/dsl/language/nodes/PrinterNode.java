@@ -1,6 +1,7 @@
 package com.james.playground.temporal.dsl.language.nodes;
 
-import com.james.playground.temporal.dsl.language.WorkflowNode;
+import com.james.playground.temporal.dsl.language.core.NodeType;
+import com.james.playground.temporal.dsl.language.core.WorkflowNode;
 import com.james.playground.temporal.dsl.workflows.visitors.DelegatingVisitor;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,5 +21,10 @@ public class PrinterNode extends WorkflowNode {
   @Override
   public String accept(DelegatingVisitor visitor) {
     return visitor.visit(this);
+  }
+
+  @Override
+  public String getType() {
+    return NodeType.PRINTER;
   }
 }

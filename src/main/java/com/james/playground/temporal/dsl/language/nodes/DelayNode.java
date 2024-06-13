@@ -1,7 +1,8 @@
 package com.james.playground.temporal.dsl.language.nodes;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.james.playground.temporal.dsl.language.WorkflowNode;
+import com.james.playground.temporal.dsl.language.core.NodeType;
+import com.james.playground.temporal.dsl.language.core.WorkflowNode;
 import com.james.playground.temporal.dsl.workflows.visitors.DelegatingVisitor;
 import java.time.Duration;
 import java.time.LocalTime;
@@ -34,6 +35,11 @@ public class DelayNode extends WorkflowNode {
   @Override
   public String accept(DelegatingVisitor visitor) {
     return visitor.visit(this);
+  }
+
+  @Override
+  public String getType() {
+    return NodeType.DELAY;
   }
 
   @JsonIgnore

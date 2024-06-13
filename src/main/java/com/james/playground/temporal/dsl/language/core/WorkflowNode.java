@@ -1,4 +1,4 @@
-package com.james.playground.temporal.dsl.language;
+package com.james.playground.temporal.dsl.language.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -53,6 +53,9 @@ public abstract class WorkflowNode {
   private boolean activeInProduction;
 
   public abstract String accept(DelegatingVisitor visitor);
+
+  @JsonIgnore
+  public abstract String getType();
 
   @JsonIgnore
   public boolean isDeleted() {
