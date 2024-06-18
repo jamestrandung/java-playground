@@ -6,6 +6,7 @@ import com.james.playground.temporal.dsl.language.conditions.GroupMembershipCond
 import com.james.playground.temporal.dsl.language.core.Condition;
 import com.james.playground.temporal.dsl.language.nodes.BranchNode;
 import io.temporal.workflow.Workflow;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 
@@ -19,9 +20,9 @@ public class BranchVisitor extends NodeVisitor<BranchNode> {
 
   @Override
   public String visit(BranchNode node) {
-    for (Condition condition : node.getConditions()) {
-      if (condition.accept(this)) {
-        return condition.getNextNodeId();
+    for (Map.Entry<String, Condition> entry : node.getConditions().entrySet()) {
+      if (entry.getValue().accept(this)) {
+        return entry.getKey();
       }
     }
 

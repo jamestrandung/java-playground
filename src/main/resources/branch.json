@@ -1,4 +1,5 @@
 {
+  "@type": "MARKETING",
   "id": "workflowDefinitionId",
   "context": {
     "enrollmentCondition": null,
@@ -16,18 +17,16 @@
     "1": {
       "@type": "BRANCH",
       "id": "1",
-      "conditions": [
-        {
+      "conditions": {
+        "2": {
           "@type": "GROUP_MEMBERSHIP",
-          "nextNodeId": "2",
           "groupId": 100
         },
-        {
+        "3": {
           "@type": "GROUP_MEMBERSHIP",
-          "nextNodeId": "3",
           "groupId": 200
         }
-      ],
+      },
       "nextNodeId": "4",
       "modifiable": true,
       "activeInProduction": true

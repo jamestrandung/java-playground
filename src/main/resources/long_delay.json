@@ -1,9 +1,12 @@
 {
+  "@type": "MARKETING",
   "id": "workflowDefinitionId",
   "context": {
     "enrollmentCondition": null,
     "exitCondition": null,
-    "shouldWithdrawIfEnrollmentConditionNotMet": false
+    "shouldWithdrawIfEnrollmentConditionNotMet": false,
+    "lifetimeGroupId": 123,
+    "activeGroupId": 456
   },
   "nodes": {
     "START": {
@@ -19,7 +22,7 @@
       "nextNodeId": "2",
       "modifiable": true,
       "activeInProduction": true,
-      "durationInSeconds": 10
+      "durationInSeconds": 3600
     },
     "2": {
       "@type": "PRINTER",

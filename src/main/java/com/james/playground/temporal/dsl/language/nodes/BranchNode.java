@@ -1,10 +1,13 @@
 package com.james.playground.temporal.dsl.language.nodes;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.james.playground.temporal.dsl.language.core.Condition;
 import com.james.playground.temporal.dsl.language.core.NodeType;
 import com.james.playground.temporal.dsl.language.core.WorkflowNode;
+import com.james.playground.temporal.dsl.language.versioning.NodeChangeSignal;
 import com.james.playground.temporal.dsl.workflows.visitors.DelegatingVisitor;
-import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,7 +20,10 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class BranchNode extends WorkflowNode {
-  private List<Condition> conditions;
+  @JsonProperty(NodeType.PROPERTY_NAME)
+  private final String type = NodeType.BRANCH;
+
+  private Map<String, Condition> conditions;
 
   @Override
   public String accept(DelegatingVisitor visitor) {
@@ -25,7 +31,7 @@ public class BranchNode extends WorkflowNode {
   }
 
   @Override
-  public String getType() {
-    return NodeType.BRANCH;
+  public Optional<NodeChangeSignal> detectChange(WorkflowNode latest) {
+    return Optional.empty();
   }
 }

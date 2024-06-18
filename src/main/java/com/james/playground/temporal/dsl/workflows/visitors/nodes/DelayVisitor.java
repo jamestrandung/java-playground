@@ -6,8 +6,8 @@ import com.james.playground.temporal.dsl.activities.UserGroupActivity.UserGroupI
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
 import com.james.playground.temporal.dsl.language.core.WorkflowDefinition;
 import com.james.playground.temporal.dsl.language.core.WorkflowNode;
-import com.james.playground.temporal.dsl.language.nodes.DelayNode;
-import com.james.playground.temporal.dsl.language.nodes.DelayNode.DelayInterruptionSignal;
+import com.james.playground.temporal.dsl.language.nodes.delay.DelayInterruptionSignal;
+import com.james.playground.temporal.dsl.language.nodes.delay.DelayNode;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
 import java.time.Instant;
@@ -26,8 +26,7 @@ import org.slf4j.Logger;
 public class DelayVisitor extends NodeVisitor<DelayNode> {
   private static final Logger LOGGER = Workflow.getLogger(DelayVisitor.class);
   private static final ZoneId SINGAPORE_TIMEZONE = ZoneId.of("Asia/Singapore");
-
-  private Supplier<WorkflowDefinition> workflowDefinitionSupplier;
+  private Supplier<WorkflowDefinition<?>> workflowDefinitionSupplier;
 
   private ZoneId userTimezone;
   private DelayNode activeNode;
@@ -36,7 +35,7 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
 
   public DelayVisitor(
       DynamicWorkflowInput input,
-      Supplier<WorkflowDefinition> workflowDefinitionSupplier
+      Supplier<WorkflowDefinition<?>> workflowDefinitionSupplier
   ) {
     super(input);
     this.workflowDefinitionSupplier = workflowDefinitionSupplier;
@@ -59,7 +58,7 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
       this.localUserGroupActivity.addToGroup(
           UserGroupInput.builder()
               .userId(this.input.getUserId())
-              .groupId(this.activeNode.getGroupIdForActiveUsers())
+              .groupId(this.activeNode.getActiveGroupId())
               .build()
       );
 
@@ -68,7 +67,7 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
       this.localUserGroupActivity.removeFromGroup(
           UserGroupInput.builder()
               .userId(this.input.getUserId())
-              .groupId(this.activeNode.getGroupIdForActiveUsers())
+              .groupId(this.activeNode.getActiveGroupId())
               .build()
       );
 
@@ -206,7 +205,7 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
     return Duration.between(nowDateTime, targetDateTime.withSecond(0));
   }
 
-  public void interruptDelay(DelayInterruptionSignal signal) {
+  public void visit(DelayInterruptionSignal signal) {
     // We haven't arrived at the node yet or already passed it
     if (this.activeNode == null) {
       return;
@@ -223,21 +222,6 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
     }
 
     this.interruptionSignal = signal;
-
-    // TODO-1: handle the scenario where signal arrives just
-    // after user was added to group but before delay starts.
-    // => Need to queue the signal for later processing.
-
-    // TODO-2: handle the scenario where signal arrives late
-    // just after the user has finished the delay.
-    // => Need to discard the signal.
-
-    // TODO-3: handle the scenario where signal processing
-    // starts just before the Activity for adding user to
-    // group completes. Hence, user doesn't get this signal
-    // and proceed to wait for the original delay after
-    // getting added to group.
-    // => Need to detect changes.
   }
 
   boolean isFirstVisit() {

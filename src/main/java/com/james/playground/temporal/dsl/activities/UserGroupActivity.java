@@ -25,7 +25,7 @@ public interface UserGroupActivity {
   GetUserIdsInGroupOutput getUserIdsInGroup(GetUserIdsInGroupInput input);
 
   @ActivityMethod
-  <T> void broadcastSignalToGroup(GroupSignalInput<T> input);
+  <T> void broadcastSignalToGroup(GroupSignalInput input);
 
   @ActivityMethod
   void updateInMemoryCounter(UserGroupInput input);

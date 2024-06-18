@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper.Builder;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.james.playground.temporal.dsl.language.core.WorkflowNode;
-import com.james.playground.temporal.dsl.workflows.MarketingWorkflow;
+import com.james.playground.temporal.dsl.workflows.marketing.MarketingWorkflow;
 import io.temporal.client.WorkflowClientOptions;
 import io.temporal.common.converter.DefaultDataConverter;
 import io.temporal.common.converter.JacksonJsonPayloadConverter;

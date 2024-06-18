@@ -5,11 +5,13 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.james.playground.temporal.dsl.language.nodes.BranchNode;
-import com.james.playground.temporal.dsl.language.nodes.DelayNode;
 import com.james.playground.temporal.dsl.language.nodes.PrinterNode;
 import com.james.playground.temporal.dsl.language.nodes.RandomDistributionNode;
 import com.james.playground.temporal.dsl.language.nodes.TransitNode;
+import com.james.playground.temporal.dsl.language.nodes.delay.DelayNode;
+import com.james.playground.temporal.dsl.language.versioning.NodeChangeSignal;
 import com.james.playground.temporal.dsl.workflows.visitors.DelegatingVisitor;
+import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -52,10 +54,12 @@ public abstract class WorkflowNode {
   private boolean modifiable;
   private boolean activeInProduction;
 
-  public abstract String accept(DelegatingVisitor visitor);
-
   @JsonIgnore
   public abstract String getType();
+
+  public abstract String accept(DelegatingVisitor visitor);
+
+  public abstract Optional<NodeChangeSignal> detectChange(WorkflowNode latest);
 
   @JsonIgnore
   public boolean isDeleted() {

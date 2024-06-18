@@ -79,7 +79,7 @@ public class SignalController {
         GroupSignalBroadcastWorkflow.class,
         WorkflowOptions.newBuilder()
             .setTaskQueue(GroupSignalBroadcastWorkflow.QUEUE_NAME)
-            .setWorkflowId(GroupSignalBroadcastWorkflow.WORKFLOW_ID)
+            .setWorkflowId(GroupSignalBroadcastWorkflow.WORKFLOW_ID_PREFIX)
             .build()
     );
 
@@ -88,7 +88,7 @@ public class SignalController {
             .groupId(1L)
             .workflowIdPrefix(SignalReceiverWorkflow.WORKFLOW_ID_PREFIX)
             .signalName("unblock")
-            .payload("Hello, World!")
+            .payload(new String[]{"Hello, World!"})
             .pageIdx(0)
             .pageSize(count / 2)
             .build()

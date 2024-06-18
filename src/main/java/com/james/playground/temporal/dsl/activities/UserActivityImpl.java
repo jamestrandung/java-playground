@@ -1,6 +1,6 @@
 package com.james.playground.temporal.dsl.activities;
 
-import com.james.playground.temporal.dsl.workflows.MarketingWorkflow;
+import com.james.playground.temporal.dsl.workflows.marketing.MarketingWorkflow;
 import io.temporal.spring.boot.ActivityImpl;
 import java.time.ZoneOffset;
 import lombok.extern.slf4j.Slf4j;

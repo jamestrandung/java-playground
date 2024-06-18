@@ -1,4 +1,5 @@
 {
+  "@type": "MARKETING",
   "id": "workflowDefinitionId",
   "context": {
     "enrollmentCondition": null,
@@ -35,7 +36,7 @@
       "nextNodeId": "4",
       "modifiable": true,
       "activeInProduction": true,
-      "releaseTimeOfDay": "10:32",
+      "releaseTimeOfDay": "12:58",
       "shouldReleaseInUserTimezone": true
     },
     "4": {
@@ -52,7 +53,7 @@
       "nextNodeId": "6",
       "modifiable": true,
       "activeInProduction": true,
-      "releaseDateTime": "2024-06-13T11:33:00+08:00",
+      "releaseDateTime": "2024-06-18T13:59:00+08:00",
       "shouldReleaseInUserTimezone": false
     },
     "6": {
@@ -69,7 +70,7 @@
       "nextNodeId": "8",
       "modifiable": true,
       "activeInProduction": true,
-      "releaseDateTime": "2024-06-13T10:33:00+08:00",
+      "releaseDateTime": "2024-06-18T12:59:00+08:00",
       "shouldReleaseInUserTimezone": true
     },
     "8": {

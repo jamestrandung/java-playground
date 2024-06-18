@@ -1,15 +1,17 @@
-package com.james.playground.temporal.dsl.language.nodes;
+package com.james.playground.temporal.dsl.language.nodes.delay;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.james.playground.temporal.dsl.language.core.NodeType;
 import com.james.playground.temporal.dsl.language.core.WorkflowNode;
+import com.james.playground.temporal.dsl.language.versioning.NodeChangeSignal;
 import com.james.playground.temporal.dsl.workflows.visitors.DelegatingVisitor;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -22,6 +24,9 @@ import org.apache.commons.lang3.StringUtils;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class DelayNode extends WorkflowNode {
+  @JsonProperty(NodeType.PROPERTY_NAME)
+  private final String type = NodeType.DELAY;
+
   // Delay by duration
   private int durationInSeconds;
 
@@ -30,7 +35,7 @@ public class DelayNode extends WorkflowNode {
   private String releaseTimeOfDay; // HH:mm
   private boolean shouldReleaseInUserTimezone;
 
-  private long groupIdForActiveUsers;
+  private long activeGroupId;
 
   @Override
   public String accept(DelegatingVisitor visitor) {
@@ -38,8 +43,30 @@ public class DelayNode extends WorkflowNode {
   }
 
   @Override
-  public String getType() {
-    return NodeType.DELAY;
+  public Optional<NodeChangeSignal> detectChange(WorkflowNode latest) {
+    if (latest instanceof DelayNode casted) {
+      if (this.isDeleted() != casted.isDeleted()
+          || this.durationInSeconds != casted.durationInSeconds
+          || !StringUtils.equals(this.releaseDateTime, casted.releaseDateTime)
+          || !StringUtils.equals(this.releaseTimeOfDay, casted.releaseTimeOfDay)
+          || this.shouldReleaseInUserTimezone != casted.shouldReleaseInUserTimezone
+      ) {
+        return Optional.of(
+            DelayInterruptionSignal.create(DelayInterruptionCategory.DURATION_MODIFIED, this.getId(), this.activeGroupId)
+        );
+      }
+
+      if (!StringUtils.equals(this.getNextNodeId(), casted.getNextNodeId())) {
+        return Optional.of(
+            DelayInterruptionSignal.create(DelayInterruptionCategory.CONFIG_MODIFIED, this.getId(), this.activeGroupId)
+        );
+      }
+    }
+
+    // By right, nodes can never change type while keeping the same ID.
+    // In case it happened, just respect the original configurations &
+    // move on to the next node at the end of the delay.
+    return Optional.empty();
   }
 
   @JsonIgnore
@@ -70,35 +97,5 @@ public class DelayNode extends WorkflowNode {
   @JsonIgnore
   public LocalTime getReleaseLocalTime() {
     return LocalTime.parse(this.releaseTimeOfDay, DateTimeFormatter.ISO_LOCAL_TIME);
-  }
-
-  public enum DelayInterruptionType {
-    // This type should be used ONLY when there's no change to the node
-    // itself but the users at this node must move on immediately.
-    IMMEDIATE_RELEASE,
-    // This type should be used when there's a change to the duration of
-    // the node including node deletion.
-    DURATION_MODIFIED,
-    // This type should be used when there's an important change to the
-    // node that affects execution path (e.g. next node ID changed) that
-    // does not require immediate intervention.
-    CONFIG_MODIFIED
-  }
-
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class DelayInterruptionSignal {
-    private DelayInterruptionType type;
-    private String affectedNodeId;
-
-    public static boolean hasImmediateReleaseSignal(DelayInterruptionSignal signal) {
-      return signal != null && signal.getType() == DelayInterruptionType.IMMEDIATE_RELEASE;
-    }
-
-    public static boolean requireImmediateIntervention(DelayInterruptionSignal signal) {
-      return signal != null && signal.getType() != DelayInterruptionType.CONFIG_MODIFIED;
-    }
   }
 }

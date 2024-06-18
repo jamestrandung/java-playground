@@ -1,10 +1,16 @@
-package com.james.playground.temporal.dsl.language;
+package com.james.playground.temporal.dsl.language.marketing;
 
-import com.james.playground.temporal.dsl.dto.MarketingWorkflowContext;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.james.playground.temporal.dsl.dto.MarketingContext;
 import com.james.playground.temporal.dsl.language.core.WorkflowDefinition;
+import com.james.playground.temporal.dsl.language.core.WorkflowDefinitionType;
 import com.james.playground.temporal.dsl.language.core.WorkflowNode;
+import com.james.playground.temporal.dsl.language.versioning.WorkflowChangeSignal;
+import com.james.playground.temporal.dsl.workflows.marketing.MarketingWorkflow;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,17 +22,25 @@ import lombok.extern.slf4j.Slf4j;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MarketingWorkflowDefinition implements WorkflowDefinition {
+public class MarketingWorkflowDefinition implements WorkflowDefinition<MarketingWorkflowDefinition> {
   public static final MarketingWorkflowDefinition BLANK = MarketingWorkflowDefinition.builder()
       .nodes(Collections.emptyMap())
       .build();
 
+  @JsonProperty(WorkflowDefinitionType.PROPERTY_NAME)
+  private final String type = WorkflowDefinitionType.MARKETING;
+
   private String id;
-  private MarketingWorkflowContext context;
+  private MarketingContext context;
   private Map<String, WorkflowNode> nodes;
 
   public WorkflowNode put(String nodeId, WorkflowNode node) {
     return this.nodes.put(nodeId, node);
+  }
+
+  @Override
+  public String getWorkflowIdPrefix() {
+    return String.format(MarketingWorkflow.WORKFLOW_ID_PREFIX, this.id);
   }
 
   public WorkflowNode findNodeIgnoringDeletedNodes(String nodeId) {
@@ -57,5 +71,14 @@ public class MarketingWorkflowDefinition implements WorkflowDefinition {
     }
 
     return result;
+  }
+
+  @Override
+  public Optional<WorkflowChangeSignal> detectChange(MarketingWorkflowDefinition other) {
+    if (!Objects.equals(this.context, other.context)) {
+      return Optional.of(new MarketingContextChangeSignal());
+    }
+
+    return Optional.empty();
   }
 }
