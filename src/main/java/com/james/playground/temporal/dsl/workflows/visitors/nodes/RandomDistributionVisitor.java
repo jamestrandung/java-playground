@@ -3,8 +3,8 @@ package com.james.playground.temporal.dsl.workflows.visitors.nodes;
 import com.james.playground.temporal.dsl.activities.UserGroupActivity.UserGroupInput;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
 import com.james.playground.temporal.dsl.language.nodes.RandomDistributionNode;
+import com.james.playground.temporal.dsl.language.nodes.RandomDistributionNode.RandomDistributionBranch;
 import io.temporal.workflow.Workflow;
-import java.util.List;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -20,17 +20,31 @@ public class RandomDistributionVisitor extends NodeVisitor<RandomDistributionNod
 
   @Override
   public String visit(RandomDistributionNode node) {
-    List<String> nextNodeIds = node.getNextNodeIds();
+    int randomIdx = Workflow.newRandom().nextInt(10000);
 
-    int randomIdx = Workflow.newRandom().nextInt(nextNodeIds.size());
+    int upperBound = 0;
+    for (RandomDistributionBranch branch : node.getBranches()) {
+      upperBound = upperBound + branch.getProbability();
+
+      if (randomIdx < upperBound) {
+        this.userGroupActivity.updateInMemoryCounter(
+            UserGroupInput.builder()
+                .groupId((long) branch.getProbability())
+                .userId(this.input.getUserId())
+                .build()
+        );
+
+        return branch.getNextNodeId();
+      }
+    }
 
     this.userGroupActivity.updateInMemoryCounter(
         UserGroupInput.builder()
-            .groupId((long) randomIdx)
+            .groupId(10000L)
             .userId(this.input.getUserId())
             .build()
     );
 
-    return nextNodeIds.get(randomIdx);
+    return node.getNextNodeId();
   }
 }

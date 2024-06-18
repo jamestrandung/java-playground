@@ -34,11 +34,13 @@ public class BranchVisitor extends NodeVisitor<BranchNode> {
   }
 
   public boolean visit(GroupMembershipCondition condition) {
-    return this.localUserGroupActivity.isUserInGroup(
+    boolean isUserInGroup = this.localUserGroupActivity.isUserInGroup(
         UserGroupInput.builder()
             .userId(this.input.getUserId())
             .groupId(condition.getGroupId())
             .build()
     );
+
+    return isUserInGroup == condition.isShouldBeInGroup();
   }
 }

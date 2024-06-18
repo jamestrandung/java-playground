@@ -17,11 +17,17 @@
     "1": {
       "@type": "RANDOM_DISTRIBUTION",
       "id": "1",
-      "nextNodeIds": [
-        "END",
-        "END",
-        "END"
+      "branches": [
+        {
+          "probability": 2500,
+          "nextNodeId": "END"
+        },
+        {
+          "probability": 5000,
+          "nextNodeId": "END"
+        }
       ],
+      "nextNodeId": "END",
       "modifiable": true,
       "activeInProduction": true
     },

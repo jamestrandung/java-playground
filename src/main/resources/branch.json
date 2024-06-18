@@ -20,11 +20,13 @@
       "conditions": {
         "2": {
           "@type": "GROUP_MEMBERSHIP",
-          "groupId": 100
+          "groupId": 100,
+          "shouldBeInGroup": true
         },
         "3": {
           "@type": "GROUP_MEMBERSHIP",
-          "groupId": 200
+          "groupId": 200,
+          "shouldBeInGroup": false
         }
       },
       "nextNodeId": "4",

@@ -8,6 +8,7 @@ import com.james.playground.temporal.dsl.workflows.visitors.DelegatingVisitor;
 import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -22,7 +23,7 @@ public class RandomDistributionNode extends WorkflowNode {
   @JsonProperty(NodeType.PROPERTY_NAME)
   private final String type = NodeType.RANDOM_DISTRIBUTION;
 
-  private List<String> nextNodeIds;
+  private List<RandomDistributionBranch> branches;
 
   @Override
   public String accept(DelegatingVisitor visitor) {
@@ -32,5 +33,14 @@ public class RandomDistributionNode extends WorkflowNode {
   @Override
   public Optional<NodeChangeSignal> detectChange(WorkflowNode latest) {
     return Optional.empty();
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class RandomDistributionBranch {
+    private String nextNodeId;
+    private Integer probability;
   }
 }

@@ -15,6 +15,7 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 public class GroupMembershipCondition extends Condition {
   private Long groupId;
+  private boolean shouldBeInGroup;
 
   @Override
   public boolean accept(BranchVisitor visitor) {
