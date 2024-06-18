@@ -26,7 +26,7 @@ public class DelegatingVisitor {
 
   public DelegatingVisitor(
       DynamicWorkflowInput input,
-      Supplier<WorkflowDefinition> workflowDefinitionSupplier
+      Supplier<WorkflowDefinition<?>> workflowDefinitionSupplier
   ) {
     this.transitVisitor = new TransitVisitor(input);
     this.delayVisitor = new DelayVisitor(input, workflowDefinitionSupplier);

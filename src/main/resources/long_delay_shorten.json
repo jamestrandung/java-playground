@@ -1,9 +1,12 @@
 {
+  "@type": "MARKETING",
   "id": "workflowDefinitionId",
   "context": {
     "enrollmentCondition": null,
     "exitCondition": null,
-    "shouldWithdrawIfEnrollmentConditionNotMet": false
+    "shouldWithdrawIfEnrollmentConditionNotMet": false,
+    "lifetimeGroupId": 123,
+    "activeGroupId": 456
   },
   "nodes": {
     "START": {

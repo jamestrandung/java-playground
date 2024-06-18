@@ -11,20 +11,20 @@ import lombok.NoArgsConstructor;
 @WorkflowInterface
 public interface GroupSignalBroadcastWorkflow {
   String QUEUE_NAME = "GroupSignalBroadcastTaskQueue";
-  String WORKFLOW_ID = "group-signal-broadcast-workflow";
+  String WORKFLOW_ID_PREFIX = "group-signal-broadcast-workflow-";
 
   @WorkflowMethod
-  <T> void broadcastSignalToGroup(GroupSignalInput<T> input);
+  <T> void broadcastSignalToGroup(GroupSignalInput input);
 
   @Data
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
-  class GroupSignalInput<T> {
+  class GroupSignalInput {
     private Long groupId;
     private String workflowIdPrefix;
     private String signalName;
-    private T payload;
+    private Object[] payload;
     private int pageIdx;
     private int pageSize;
   }

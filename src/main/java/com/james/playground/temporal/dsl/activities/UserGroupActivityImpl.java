@@ -1,7 +1,7 @@
 package com.james.playground.temporal.dsl.activities;
 
-import com.james.playground.temporal.dsl.workflows.MarketingWorkflow;
 import com.james.playground.temporal.dsl.workflows.core.GroupSignalBroadcastWorkflow.GroupSignalInput;
+import com.james.playground.temporal.dsl.workflows.marketing.MarketingWorkflow;
 import com.james.playground.temporal.utils.MiscUtils;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
@@ -43,27 +43,38 @@ public class UserGroupActivityImpl implements UserGroupActivity {
 
   @Override
   public GetUserIdsInGroupOutput getUserIdsInGroup(GetUserIdsInGroupInput input) {
-    List<Long> userIds = new ArrayList<>();
-
-    int startIdx = input.getPageSize() * input.getPageIdx();
-    int endIdx   = input.getPageSize() * (input.getPageIdx() + 1) + input.getPageIdx();
-
-    for (long i = startIdx; i < endIdx; i++) {
-      userIds.add(i);
-    }
+    List<Long> userIds = List.of(135L);
 
     return GetUserIdsInGroupOutput.builder()
         .groupId(input.getGroupId())
         .partitionId(input.getPartitionId())
         .pageIdx(input.getPageIdx())
         .pageSize(input.getPageSize())
-        .hasNext(input.getPageIdx() < 1)
+        .hasNext(false)
         .userIds(userIds)
         .build();
+
+    //    List<Long> userIds = new ArrayList<>();
+    //
+    //    int startIdx = input.getPageSize() * input.getPageIdx();
+    //    int endIdx   = input.getPageSize() * (input.getPageIdx() + 1) + input.getPageIdx();
+    //
+    //    for (long i = startIdx; i < endIdx; i++) {
+    //      userIds.add(i);
+    //    }
+    //
+    //    return GetUserIdsInGroupOutput.builder()
+    //        .groupId(input.getGroupId())
+    //        .partitionId(input.getPartitionId())
+    //        .pageIdx(input.getPageIdx())
+    //        .pageSize(input.getPageSize())
+    //        .hasNext(input.getPageIdx() < 1)
+    //        .userIds(userIds)
+    //        .build();
   }
 
   @Override
-  public <T> void broadcastSignalToGroup(GroupSignalInput<T> input) {
+  public <T> void broadcastSignalToGroup(GroupSignalInput input) {
     log.info("Started broadcasting Signal from Activity");
 
     ActivityExecutionContext context = Activity.getExecutionContext();

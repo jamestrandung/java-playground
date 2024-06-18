@@ -44,12 +44,12 @@ public class GroupSignalBroadcastWorkflowImpl implements GroupSignalBroadcastWor
   );
 
   @Override
-  public <T> void broadcastSignalToGroup(GroupSignalInput<T> input) {
+  public <T> void broadcastSignalToGroup(GroupSignalInput input) {
     this.broadcastInWorkflow(input);
     //    this.broadcastInActivity(input);
   }
 
-  <T> void broadcastInActivity(GroupSignalInput<T> input) {
+  <T> void broadcastInActivity(GroupSignalInput input) {
     LOGGER.info("Started broadcasting Signal from Activity, input: {}", input);
 
     this.userGroupActivity.broadcastSignalToGroup(input);
@@ -57,7 +57,7 @@ public class GroupSignalBroadcastWorkflowImpl implements GroupSignalBroadcastWor
     LOGGER.info("Completed broadcasting Signal from Activity");
   }
 
-  <T> void broadcastInWorkflow(GroupSignalInput<T> input) {
+  <T> void broadcastInWorkflow(GroupSignalInput input) {
     LOGGER.info("Started broadcasting Signal from Workflow, input: {}", input);
 
     GetUserIdsInGroupOutput output = this.userGroupActivity.getUserIdsInGroup(

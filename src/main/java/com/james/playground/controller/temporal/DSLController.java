@@ -1,16 +1,21 @@
 package com.james.playground.controller.temporal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.james.playground.temporal.dsl.activities.UserGroupActivity;
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
-import com.james.playground.temporal.dsl.language.MarketingWorkflowStore;
 import com.james.playground.temporal.dsl.language.core.WorkflowNode;
-import com.james.playground.temporal.dsl.language.nodes.DelayNode;
-import com.james.playground.temporal.dsl.language.nodes.DelayNode.DelayInterruptionSignal;
-import com.james.playground.temporal.dsl.language.nodes.DelayNode.DelayInterruptionType;
+import com.james.playground.temporal.dsl.language.marketing.MarketingWorkflowDefinition;
+import com.james.playground.temporal.dsl.language.marketing.MarketingWorkflowStore;
 import com.james.playground.temporal.dsl.language.nodes.PrinterNode;
-import com.james.playground.temporal.dsl.workflows.MarketingWorkflow;
+import com.james.playground.temporal.dsl.language.nodes.delay.DelayInterruptionCategory;
+import com.james.playground.temporal.dsl.language.nodes.delay.DelayInterruptionSignal;
+import com.james.playground.temporal.dsl.language.nodes.delay.DelayNode;
+import com.james.playground.temporal.dsl.workflows.marketing.MarketingVersionChangeWorkflow;
+import com.james.playground.temporal.dsl.workflows.marketing.MarketingWorkflow;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +23,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -102,11 +109,14 @@ public class DSLController {
             MarketingWorkflow.class,
             String.format(MarketingWorkflow.WORKFLOW_ID_FORMAT, workflowDefinitionId, userId)
         )
-        .interruptDelay(
-            DelayInterruptionSignal.builder()
-                .type(DelayInterruptionType.IMMEDIATE_RELEASE)
-                .affectedNodeId(affectedNodeId)
-                .build()
+        .handleChangeSignals(
+            null,
+            List.of(
+                DelayInterruptionSignal.builder()
+                    .category(DelayInterruptionCategory.IMMEDIATE_RELEASE)
+                    .affectedNodeId(affectedNodeId)
+                    .build()
+            )
         );
   }
 
@@ -124,11 +134,14 @@ public class DSLController {
             MarketingWorkflow.class,
             String.format(MarketingWorkflow.WORKFLOW_ID_FORMAT, workflowDefinitionId, userId)
         )
-        .interruptDelay(
-            DelayInterruptionSignal.builder()
-                .type(DelayInterruptionType.DURATION_MODIFIED)
-                .affectedNodeId(affectedNodeId)
-                .build()
+        .handleChangeSignals(
+            null,
+            List.of(
+                DelayInterruptionSignal.builder()
+                    .category(DelayInterruptionCategory.DURATION_MODIFIED)
+                    .affectedNodeId(affectedNodeId)
+                    .build()
+            )
         );
   }
 
@@ -149,11 +162,14 @@ public class DSLController {
               MarketingWorkflow.class,
               String.format(MarketingWorkflow.WORKFLOW_ID_FORMAT, workflowDefinitionId, userId)
           )
-          .interruptDelay(
-              DelayInterruptionSignal.builder()
-                  .type(DelayInterruptionType.DURATION_MODIFIED)
-                  .affectedNodeId(affectedNodeId)
-                  .build()
+          .handleChangeSignals(
+              null,
+              List.of(
+                  DelayInterruptionSignal.builder()
+                      .category(DelayInterruptionCategory.DURATION_MODIFIED)
+                      .affectedNodeId(affectedNodeId)
+                      .build()
+              )
           );
     }
   }
@@ -182,11 +198,14 @@ public class DSLController {
             MarketingWorkflow.class,
             String.format(MarketingWorkflow.WORKFLOW_ID_FORMAT, workflowDefinitionId, userId)
         )
-        .interruptDelay(
-            DelayInterruptionSignal.builder()
-                .type(DelayInterruptionType.CONFIG_MODIFIED)
-                .affectedNodeId(affectedNodeId)
-                .build()
+        .handleChangeSignals(
+            null,
+            List.of(
+                DelayInterruptionSignal.builder()
+                    .category(DelayInterruptionCategory.CONFIG_MODIFIED)
+                    .affectedNodeId(affectedNodeId)
+                    .build()
+            )
         );
   }
 
@@ -198,5 +217,56 @@ public class DSLController {
   @DeleteMapping("/counters")
   public void resetInMemoryCounters() {
     this.userGroupActivity.resetInMemoryCounters();
+  }
+
+  @GetMapping("/jackson-serialization")
+  public void jacksonSerialization() throws JsonProcessingException {
+    ObjectMapper mapper = new ObjectMapper();
+
+    log.info("JSON obj: {}", mapper.writeValueAsString(
+        DelayInterruptionSignal.builder()
+            .category(DelayInterruptionCategory.IMMEDIATE_RELEASE)
+            .affectedNodeId("123")
+            .build()
+    ));
+
+    log.info("JSON list: {}", mapper.writeValueAsString(
+        List.of(
+            DelayInterruptionSignal.builder()
+                .category(DelayInterruptionCategory.IMMEDIATE_RELEASE)
+                .affectedNodeId("123")
+                .build()
+        )
+    ));
+  }
+
+  @PostMapping("/version-change")
+  public void detectChangesAndBroadcastSignals(
+      @RequestParam String workflowDefinitionId,
+      @RequestParam String newVersionName
+  ) throws IOException {
+    MarketingVersionChangeWorkflow workflow = this.workflowClient.newWorkflowStub(
+        MarketingVersionChangeWorkflow.class,
+        WorkflowOptions.newBuilder()
+            .setTaskQueue(MarketingVersionChangeWorkflow.QUEUE_NAME)
+            .setWorkflowId(MarketingVersionChangeWorkflow.WORKFLOW_ID_PREFIX + workflowDefinitionId)
+            .build()
+    );
+
+    Resource resource = new ClassPathResource(newVersionName);
+
+    MarketingWorkflowDefinition old = this.marketingWorkflowStore.findWorkflowDefinition(workflowDefinitionId);
+    MarketingWorkflowDefinition latest = MarketingWorkflowStore.OBJECT_MAPPER.readValue(
+        resource.getInputStream(),
+        MarketingWorkflowDefinition.class
+    );
+
+    this.marketingWorkflowStore.updateWorkflowDefinition(workflowDefinitionId, latest);
+
+    WorkflowClient.execute(workflow::detectChangesAndBroadcastSignals, old, latest)
+        .exceptionally(ex -> {
+          log.error("Marketing version change workflow failure: {}", ex.getMessage());
+          return null;
+        });
   }
 }
