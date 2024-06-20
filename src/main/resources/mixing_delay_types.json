@@ -11,14 +11,14 @@
       "@type": "TRANSIT",
       "id": "START",
       "nextNodeId": "1",
-      "modifiable": false,
+      "deletable": false,
       "activeInProduction": true
     },
     "1": {
       "@type": "DELAY",
       "id": "1",
       "nextNodeId": "2",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true,
       "durationInSeconds": 5
     },
@@ -26,7 +26,7 @@
       "@type": "PRINTER",
       "id": "2",
       "nextNodeId": "3",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true,
       "text": "Delayed by duration"
     },
@@ -34,57 +34,74 @@
       "@type": "DELAY",
       "id": "3",
       "nextNodeId": "4",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true,
-      "releaseTimeOfDay": "12:58",
-      "shouldReleaseInUserTimezone": true
+      "releaseTimeOfDay": "20:47:00+08:00",
+      "shouldReleaseInUserTimezone": false
     },
     "4": {
       "@type": "PRINTER",
       "id": "4",
       "nextNodeId": "5",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true,
-      "text": "Delayed by time of day"
+      "text": "Delayed by time of day in system timezone"
     },
     "5": {
       "@type": "DELAY",
       "id": "5",
       "nextNodeId": "6",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true,
-      "releaseDateTime": "2024-06-18T13:59:00+08:00",
-      "shouldReleaseInUserTimezone": false
+      "releaseTimeOfDay": "19:48:00+08:00",
+      "shouldReleaseInUserTimezone": true
     },
     "6": {
       "@type": "PRINTER",
       "id": "6",
       "nextNodeId": "7",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true,
-      "text": "Delayed by date time in system timezone"
+      "text": "Delayed by time of day in user timezone"
     },
     "7": {
       "@type": "DELAY",
       "id": "7",
       "nextNodeId": "8",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true,
-      "releaseDateTime": "2024-06-18T12:59:00+08:00",
-      "shouldReleaseInUserTimezone": true
+      "releaseDateTime": "2024-06-19T20:49:00+08:00",
+      "shouldReleaseInUserTimezone": false
     },
     "8": {
       "@type": "PRINTER",
       "id": "8",
+      "nextNodeId": "9",
+      "deletable": true,
+      "activeInProduction": true,
+      "text": "Delayed by date time in system timezone"
+    },
+    "9": {
+      "@type": "DELAY",
+      "id": "9",
+      "nextNodeId": "10",
+      "deletable": true,
+      "activeInProduction": true,
+      "releaseDateTime": "2024-06-19T19:50:00+08:00",
+      "shouldReleaseInUserTimezone": true
+    },
+    "10": {
+      "@type": "PRINTER",
+      "id": "10",
       "nextNodeId": "END",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true,
       "text": "Delayed by date time in user timezone without fetching timezone again"
     },
     "END": {
       "@type": "TRANSIT",
       "id": "END",
-      "modifiable": false,
+      "deletable": false,
       "activeInProduction": true
     }
   }

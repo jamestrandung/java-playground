@@ -1,6 +1,6 @@
 package com.james.playground.temporal.dsl.dto;
 
-import com.james.playground.temporal.dsl.language.core.Condition;
+import com.james.playground.temporal.dsl.language.conditions.GroupMembershipCondition;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,9 +13,10 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class MarketingContext {
-  private Condition enrollmentCondition;
-  private Condition exitCondition;
+  private GroupMembershipCondition enrollmentCondition;
+  private GroupMembershipCondition exitCondition;
   private boolean shouldWithdrawIfEnrollmentConditionNotMet;
+  private boolean shouldBeEjectedFromAllOtherWorkflows;
 
   private Long lifetimeGroupId;
   private Long activeGroupId;

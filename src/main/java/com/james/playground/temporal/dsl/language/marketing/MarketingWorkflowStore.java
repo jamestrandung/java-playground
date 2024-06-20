@@ -44,9 +44,9 @@ public class MarketingWorkflowStore {
 
       // Branching
       //      Resource resource = new ClassPathResource("random_distribution.json");
-      Resource resource = new ClassPathResource("branch.json");
+      //      Resource resource = new ClassPathResource("switch.json");
 
-      //      Resource resource = new ClassPathResource("mixing_delay_types.json");
+      Resource resource = new ClassPathResource("mixing_delay_types.json");
 
       DEFINITION = OBJECT_MAPPER.readValue(resource.getInputStream(), MarketingWorkflowDefinition.class);
 

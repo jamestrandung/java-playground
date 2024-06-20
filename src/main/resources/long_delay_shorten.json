@@ -13,14 +13,14 @@
       "@type": "TRANSIT",
       "id": "START",
       "nextNodeId": "1",
-      "modifiable": false,
+      "deletable": false,
       "activeInProduction": true
     },
     "1": {
       "@type": "DELAY",
       "id": "1",
       "nextNodeId": "2",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true,
       "durationInSeconds": 60
     },
@@ -28,7 +28,7 @@
       "@type": "PRINTER",
       "id": "2",
       "nextNodeId": "3",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true,
       "text": "Hello, World!"
     },
@@ -36,14 +36,14 @@
       "@type": "DELAY",
       "id": "3",
       "nextNodeId": "END",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true,
       "durationInSeconds": 2
     },
     "END": {
       "@type": "TRANSIT",
       "id": "END",
-      "modifiable": false,
+      "deletable": false,
       "activeInProduction": true
     }
   }

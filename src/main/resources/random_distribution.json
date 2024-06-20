@@ -11,7 +11,7 @@
       "@type": "TRANSIT",
       "id": "START",
       "nextNodeId": "1",
-      "modifiable": false,
+      "deletable": false,
       "activeInProduction": true
     },
     "1": {
@@ -28,13 +28,13 @@
         }
       ],
       "nextNodeId": "END",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true
     },
     "END": {
       "@type": "TRANSIT",
       "id": "END",
-      "modifiable": false,
+      "deletable": false,
       "activeInProduction": true
     }
   }

@@ -7,7 +7,7 @@ import com.james.playground.temporal.dsl.language.core.WorkflowNode;
 import com.james.playground.temporal.dsl.language.versioning.NodeChangeSignal;
 import com.james.playground.temporal.dsl.workflows.visitors.DelegatingVisitor;
 import java.time.Duration;
-import java.time.LocalTime;
+import java.time.OffsetTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -31,8 +31,10 @@ public class DelayNode extends WorkflowNode {
   private int durationInSeconds;
 
   // Delay by date time
-  private String releaseDateTime; // ISO format: yyyy-MM-dd'T'HH:mm:ss.SSSXXX
-  private String releaseTimeOfDay; // HH:mm
+  private String releaseDateTime; // ISO format: 2011-12-03T10:15:30+01:00
+  // Delay until the very next time of day
+  private String releaseTimeOfDay; // ISO format: 10:15:30+01:00
+  // Whether to replace the timezone portion with the user's timezone
   private boolean shouldReleaseInUserTimezone;
 
   private long activeGroupId;
@@ -95,7 +97,7 @@ public class DelayNode extends WorkflowNode {
   }
 
   @JsonIgnore
-  public LocalTime getReleaseLocalTime() {
-    return LocalTime.parse(this.releaseTimeOfDay, DateTimeFormatter.ISO_LOCAL_TIME);
+  public OffsetTime getReleaseOffsetTime() {
+    return OffsetTime.parse(this.releaseTimeOfDay, DateTimeFormatter.ISO_OFFSET_TIME);
   }
 }

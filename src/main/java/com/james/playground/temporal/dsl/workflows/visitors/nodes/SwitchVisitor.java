@@ -4,25 +4,25 @@ import com.james.playground.temporal.dsl.activities.UserGroupActivity.UserGroupI
 import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
 import com.james.playground.temporal.dsl.language.conditions.GroupMembershipCondition;
 import com.james.playground.temporal.dsl.language.core.Condition;
-import com.james.playground.temporal.dsl.language.nodes.BranchNode;
+import com.james.playground.temporal.dsl.language.nodes.SwitchNode;
+import com.james.playground.temporal.dsl.language.nodes.SwitchNode.SwitchCase;
 import io.temporal.workflow.Workflow;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 
 @Slf4j
-public class BranchVisitor extends NodeVisitor<BranchNode> {
-  private static final Logger LOGGER = Workflow.getLogger(BranchVisitor.class);
+public class SwitchVisitor extends NodeVisitor<SwitchNode> {
+  private static final Logger LOGGER = Workflow.getLogger(SwitchVisitor.class);
 
-  public BranchVisitor(DynamicWorkflowInput input) {
+  public SwitchVisitor(DynamicWorkflowInput input) {
     super(input);
   }
 
   @Override
-  public String visit(BranchNode node) {
-    for (Map.Entry<String, Condition> entry : node.getConditions().entrySet()) {
-      if (entry.getValue().accept(this)) {
-        return entry.getKey();
+  public String visit(SwitchNode node) {
+    for (SwitchCase c : node.getCases()) {
+      if (this.isConditionMet(c.getCondition())) {
+        return c.getNextNodeId();
       }
     }
 

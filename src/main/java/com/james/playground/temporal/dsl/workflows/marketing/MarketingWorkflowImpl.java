@@ -41,13 +41,13 @@ public class MarketingWorkflowImpl extends DynamicWorkflowImpl<MarketingWorkflow
       return false;
     }
 
-    if (this.visitor.getBranchVisitor().isConditionMet(this.context.getExitCondition())) {
+    if (this.visitor.getSwitchVisitor().isConditionMet(this.context.getExitCondition())) {
       return true;
     }
 
     return this.context.isShouldWithdrawIfEnrollmentConditionNotMet()
         && this.context.getEnrollmentCondition() != null
-        && !this.visitor.getBranchVisitor()
+        && !this.visitor.getSwitchVisitor()
         .isConditionMet(this.context.getEnrollmentCondition());
   }
 

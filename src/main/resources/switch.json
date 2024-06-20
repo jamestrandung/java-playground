@@ -11,33 +11,41 @@
       "@type": "TRANSIT",
       "id": "START",
       "nextNodeId": "1",
-      "modifiable": false,
+      "deletable": false,
       "activeInProduction": true
     },
     "1": {
       "@type": "BRANCH",
       "id": "1",
-      "conditions": {
-        "2": {
-          "@type": "GROUP_MEMBERSHIP",
-          "groupId": 100,
-          "shouldBeInGroup": true
+      "cases": [
+        {
+          "name": "In group 100",
+          "condition": {
+            "@type": "GROUP_MEMBERSHIP",
+            "groupId": 100,
+            "shouldBeInGroup": true
+          },
+          "nextNodeId": "2"
         },
-        "3": {
-          "@type": "GROUP_MEMBERSHIP",
-          "groupId": 200,
-          "shouldBeInGroup": false
+        {
+          "name": "Out of group 200",
+          "condition": {
+            "@type": "GROUP_MEMBERSHIP",
+            "groupId": 200,
+            "shouldBeInGroup": false
+          },
+          "nextNodeId": "3"
         }
-      },
+      ],
       "nextNodeId": "4",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true
     },
     "2": {
       "@type": "PRINTER",
       "id": "2",
       "nextNodeId": "END",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true,
       "text": "FIRST BRANCH"
     },
@@ -45,7 +53,7 @@
       "@type": "PRINTER",
       "id": "3",
       "nextNodeId": "END",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true,
       "text": "SECOND BRANCH"
     },
@@ -53,14 +61,14 @@
       "@type": "PRINTER",
       "id": "4",
       "nextNodeId": "END",
-      "modifiable": true,
+      "deletable": true,
       "activeInProduction": true,
       "text": "DEFAULT BRANCH"
     },
     "END": {
       "@type": "TRANSIT",
       "id": "END",
-      "modifiable": false,
+      "deletable": false,
       "activeInProduction": true
     }
   }

@@ -12,7 +12,7 @@ import io.temporal.workflow.Workflow;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.function.Supplier;
@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 @NoArgsConstructor
 public class DelayVisitor extends NodeVisitor<DelayNode> {
   private static final Logger LOGGER = Workflow.getLogger(DelayVisitor.class);
-  private static final ZoneId SINGAPORE_TIMEZONE = ZoneId.of("Asia/Singapore");
   private Supplier<WorkflowDefinition<?>> workflowDefinitionSupplier;
 
   private ZoneId userTimezone;
@@ -129,14 +128,12 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
       return this.computeBasicDelayDuration();
     }
 
-    ZoneId timezone = this.decideTimezone();
-
     if (this.activeNode.isDelayByDateTime()) {
-      return this.computeDelayDurationByDateTime(timezone);
+      return this.computeDelayDurationByDateTime();
     }
 
     if (this.activeNode.isDelayByTimeOfDay()) {
-      return this.computeDelayDurationByTimeOfDay(timezone);
+      return this.computeDelayDurationByTimeOfDay();
     }
 
     return Duration.ZERO;
@@ -155,12 +152,42 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
     return this.activeNode.getDuration().minus(elapsedDuration);
   }
 
-  ZoneId decideTimezone() {
-    if (!this.activeNode.isShouldReleaseInUserTimezone()) {
-      return SINGAPORE_TIMEZONE;
+  Duration computeDelayDurationByDateTime() {
+    ZonedDateTime zonedDateTime = this.activeNode.getReleaseZonedDateTime();
+    if (this.activeNode.isShouldReleaseInUserTimezone()) {
+      ZoneId        timezone      = this.fetchUserTimezoneOnceAndCache();
+      LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
+
+      zonedDateTime = localDateTime.atZone(timezone);
     }
 
-    return this.fetchUserTimezoneOnceAndCache();
+    return Duration.between(Instant.ofEpochMilli(Workflow.currentTimeMillis()), zonedDateTime);
+  }
+
+  Duration computeDelayDurationByTimeOfDay() {
+    OffsetTime time = this.activeNode.getReleaseOffsetTime();
+
+    ZoneId timezone = time.getOffset();
+    if (this.activeNode.isShouldReleaseInUserTimezone()) {
+      timezone = this.fetchUserTimezoneOnceAndCache();
+    }
+
+    ZonedDateTime nowDateTime    = ZonedDateTime.ofInstant(Instant.ofEpochMilli(Workflow.currentTimeMillis()), timezone);
+    ZonedDateTime targetDateTime = nowDateTime.withHour(time.getHour()).withMinute(time.getMinute());
+
+    log.info("Now: {}", nowDateTime);
+    log.info("Target: {}", targetDateTime);
+
+    if (targetDateTime.isBefore(nowDateTime)) {
+      targetDateTime = targetDateTime.plusDays(1);
+    }
+
+    // .withSecond(0) has to be done here because if we do it when we
+    // create targetDateTime above, targetDateTime might fall behind
+    // nowDateTime when now happens to be the configured release time.
+    // E.g. release time is 10:05, now is 10:05:25. This allows us to
+    // skip the delay immediately instead of waiting 1 full day.
+    return Duration.between(nowDateTime, targetDateTime.withSecond(0));
   }
 
   ZoneId fetchUserTimezoneOnceAndCache() {
@@ -175,34 +202,6 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
     }
 
     return this.userTimezone;
-  }
-
-  Duration computeDelayDurationByDateTime(ZoneId timezone) {
-    ZonedDateTime zonedDateTime = this.activeNode.getReleaseZonedDateTime();
-    if (this.activeNode.isShouldReleaseInUserTimezone()) {
-      LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
-      zonedDateTime = localDateTime.atZone(timezone);
-    }
-
-    return Duration.between(Instant.ofEpochMilli(Workflow.currentTimeMillis()), zonedDateTime);
-  }
-
-  Duration computeDelayDurationByTimeOfDay(ZoneId timezone) {
-    LocalTime     time        = this.activeNode.getReleaseLocalTime();
-    Instant       now         = Instant.ofEpochMilli(Workflow.currentTimeMillis());
-    ZonedDateTime nowDateTime = ZonedDateTime.ofInstant(now, timezone);
-
-    ZonedDateTime targetDateTime = nowDateTime.withHour(time.getHour()).withMinute(time.getMinute());
-    if (targetDateTime.isBefore(nowDateTime)) {
-      targetDateTime = targetDateTime.plusDays(1);
-    }
-
-    // .withSecond(0) has to be done here because if we do it when we
-    // create targetDateTime above, targetDateTime might fall behind
-    // nowDateTime when now happens to be the configured release time.
-    // E.g. release time is 10:05, now is 10:05:25. This allows us to
-    // skip the delay immediately instead of waiting 1 full day.
-    return Duration.between(nowDateTime, targetDateTime.withSecond(0));
   }
 
   public void visit(DelayInterruptionSignal signal) {

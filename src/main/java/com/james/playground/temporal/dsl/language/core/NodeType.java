@@ -8,5 +8,5 @@ public class NodeType {
   public static final String PRINTER = "PRINTER";
   public static final String DELAY = "DELAY";
   public static final String RANDOM_DISTRIBUTION = "RANDOM_DISTRIBUTION";
-  public static final String BRANCH = "BRANCH";
+  public static final String SWITCH = "SWITCH";
 }
