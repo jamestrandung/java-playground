@@ -55,14 +55,14 @@ public class ScheduledMoneyTransfer {
         .build();
 
     ScheduleOptions options = ScheduleOptions.newBuilder()
-        .setTriggerImmediately(true)
+        .setTriggerImmediately(true) // false will allow us to manually start the schedule
         .build();
 
-    scheduleClient.createSchedule(SCHEDULE_NAME, schedule, options);
+    this.scheduleClient.createSchedule(SCHEDULE_NAME, schedule, options);
   }
 
   public void manageMoneyTransferSchedule(String action) {
-    ScheduleHandle handle = scheduleClient.getHandle(SCHEDULE_NAME);
+    ScheduleHandle handle = this.scheduleClient.getHandle(SCHEDULE_NAME);
 
     switch (action) {
       case "pause":

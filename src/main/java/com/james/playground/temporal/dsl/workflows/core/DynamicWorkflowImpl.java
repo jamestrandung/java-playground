@@ -34,11 +34,11 @@ public abstract class DynamicWorkflowImpl<T extends WorkflowChangeSignal> implem
       WorkflowNode node = this.findNodeIgnoringDeletedNodes(nextNodeId);
       log.info("Node: {}", node);
 
-      if (!NodeType.TRANSIT.equals(node.getType()) && this.shouldExitEarly()) {
+      nextNodeId = node.accept(this.visitor);
+
+      if (NodeType.DELAY.equals(node.getType()) && this.shouldExitEarly()) {
         break;
       }
-
-      nextNodeId = node.accept(this.visitor);
     }
   }
 

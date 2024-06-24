@@ -45,6 +45,7 @@ public class MarketingWorkflowImpl extends DynamicWorkflowImpl<MarketingWorkflow
       return true;
     }
 
+    // Might get handled by delta sync
     return this.context.isShouldWithdrawIfEnrollmentConditionNotMet()
         && this.context.getEnrollmentCondition() != null
         && !this.visitor.getSwitchVisitor()
