@@ -2,6 +2,7 @@ package com.james.playground.temporal.dsl.language.marketing;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.james.playground.temporal.dsl.dto.MarketingContext;
+import com.james.playground.temporal.dsl.dto.RecurringSchedule;
 import com.james.playground.temporal.dsl.language.core.WorkflowDefinition;
 import com.james.playground.temporal.dsl.language.core.WorkflowDefinitionType;
 import com.james.playground.temporal.dsl.language.core.WorkflowNode;
@@ -31,6 +32,7 @@ public class MarketingWorkflowDefinition implements WorkflowDefinition<Marketing
   private final String type = WorkflowDefinitionType.MARKETING;
 
   private String id;
+  private RecurringSchedule schedule;
   private MarketingContext context;
   private Map<String, WorkflowNode> nodes;
 

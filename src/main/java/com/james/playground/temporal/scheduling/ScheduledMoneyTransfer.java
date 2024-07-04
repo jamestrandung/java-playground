@@ -1,6 +1,6 @@
 package com.james.playground.temporal.scheduling;
 
-import com.james.playground.temporal.moneytransfer.dto.TransactionDetails;
+import com.james.playground.controller.temporal.ScheduleController.ScheduledMoneyTransferDetails;
 import com.james.playground.temporal.moneytransfer.workflows.MoneyTransferWorkflow;
 import io.temporal.api.enums.v1.ScheduleOverlapPolicy;
 import io.temporal.client.WorkflowOptions;
@@ -8,12 +8,9 @@ import io.temporal.client.schedules.Schedule;
 import io.temporal.client.schedules.ScheduleActionStartWorkflow;
 import io.temporal.client.schedules.ScheduleClient;
 import io.temporal.client.schedules.ScheduleHandle;
-import io.temporal.client.schedules.ScheduleIntervalSpec;
 import io.temporal.client.schedules.ScheduleOptions;
 import io.temporal.client.schedules.SchedulePolicy;
 import io.temporal.client.schedules.ScheduleSpec;
-import java.time.Duration;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,14 +21,12 @@ public class ScheduledMoneyTransfer {
   @Autowired
   private ScheduleClient scheduleClient;
 
-  public void scheduleMoneyTransfer(TransactionDetails details) {
-    ScheduleSpec specs = ScheduleSpec.newBuilder()
-        .setIntervals(List.of(new ScheduleIntervalSpec(Duration.ofSeconds(2))))
-        .build();
+  public void scheduleMoneyTransfer(ScheduledMoneyTransferDetails details) {
+    ScheduleSpec specs = details.getSchedule().toScheduleSpec();
 
     ScheduleActionStartWorkflow action = ScheduleActionStartWorkflow.newBuilder()
         .setWorkflowType(MoneyTransferWorkflow.class)
-        .setArguments(details)
+        .setArguments(details.getTransaction())
         .setOptions(
             WorkflowOptions.newBuilder()
                 .setTaskQueue(MoneyTransferWorkflow.QUEUE_NAME)
@@ -55,7 +50,7 @@ public class ScheduledMoneyTransfer {
         .build();
 
     ScheduleOptions options = ScheduleOptions.newBuilder()
-        .setTriggerImmediately(true) // false will allow us to manually start the schedule
+        .setTriggerImmediately(false) // using true would trigger the workflow once immediately after the schedule is created
         .build();
 
     this.scheduleClient.createSchedule(SCHEDULE_NAME, schedule, options);

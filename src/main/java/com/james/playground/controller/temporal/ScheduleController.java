@@ -1,7 +1,12 @@
 package com.james.playground.controller.temporal;
 
+import com.james.playground.temporal.dsl.dto.RecurringSchedule;
 import com.james.playground.temporal.moneytransfer.dto.TransactionDetails;
 import com.james.playground.temporal.scheduling.ScheduledMoneyTransfer;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,12 +24,21 @@ public class ScheduleController {
   private ScheduledMoneyTransfer scheduledMoneyTransfer;
 
   @PostMapping
-  public void scheduleTransfer(@RequestBody TransactionDetails details) {
-    scheduledMoneyTransfer.scheduleMoneyTransfer(details);
+  public void scheduleTransfer(@RequestBody ScheduledMoneyTransferDetails details) {
+    this.scheduledMoneyTransfer.scheduleMoneyTransfer(details);
   }
 
   @PutMapping
   public void manageTransferSchedule(@RequestParam String action) {
-    scheduledMoneyTransfer.manageMoneyTransferSchedule(action);
+    this.scheduledMoneyTransfer.manageMoneyTransferSchedule(action);
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class ScheduledMoneyTransferDetails {
+    private RecurringSchedule schedule;
+    private TransactionDetails transaction;
   }
 }
