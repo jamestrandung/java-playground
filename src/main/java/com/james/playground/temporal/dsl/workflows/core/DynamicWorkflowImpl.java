@@ -4,6 +4,7 @@ import com.james.playground.temporal.dsl.dto.DynamicWorkflowInput;
 import com.james.playground.temporal.dsl.language.core.NodeType;
 import com.james.playground.temporal.dsl.language.core.WorkflowDefinition;
 import com.james.playground.temporal.dsl.language.core.WorkflowNode;
+import com.james.playground.temporal.dsl.language.marketing.MarketingWorkflowDefinition.ExecutablePath;
 import com.james.playground.temporal.dsl.language.nodes.TransitNode;
 import com.james.playground.temporal.dsl.language.versioning.NodeChangeSignal;
 import com.james.playground.temporal.dsl.language.versioning.WorkflowChangeSignal;
@@ -12,6 +13,7 @@ import io.temporal.workflow.Workflow;
 import java.util.List;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.junit.platform.commons.util.StringUtils;
 import org.slf4j.Logger;
@@ -31,9 +33,12 @@ public abstract class DynamicWorkflowImpl<T extends WorkflowChangeSignal> implem
 
     String nextNodeId = TransitNode.START_ID;
     while (StringUtils.isNotBlank(nextNodeId)) {
-      WorkflowNode node = this.findNodeIgnoringDeletedNodes(nextNodeId);
-      log.info("Node: {}", node);
+      WorkflowNode node = this.findFirstExecutableNode(nextNodeId);
+      if (node == null) {
+        break;
+      }
 
+      log.info("Node: {}", node);
       nextNodeId = node.accept(this.visitor);
 
       if (NodeType.DELAY.equals(node.getType()) && this.shouldExitEarly()) {
@@ -57,11 +62,13 @@ public abstract class DynamicWorkflowImpl<T extends WorkflowChangeSignal> implem
 
   protected abstract void handleWorkflowChangeSignals(List<T> workflowSignals);
 
-  WorkflowNode findNodeIgnoringDeletedNodes(String nodeId) {
-    return Workflow.sideEffect(
-        WorkflowNode.class,
+  WorkflowNode findFirstExecutableNode(String nodeId) {
+    ExecutablePath result = Workflow.sideEffect(
+        ExecutablePath.class,
         () -> this.workflowDefinitionSupplier.get()
-            .findNodeIgnoringDeletedNodes(nodeId)
+            .findFirstExecutableNode(nodeId)
     );
+
+    return CollectionUtils.isEmpty(result) ? null : result.getExecutableNode();
   }
 }

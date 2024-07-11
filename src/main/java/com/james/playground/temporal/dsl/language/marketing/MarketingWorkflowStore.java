@@ -31,7 +31,7 @@ public class MarketingWorkflowStore {
       // 2. Updated delay duration + printed text
       //      Resource resource = new ClassPathResource("workflow_definition_2.json");
       // 3. Delete a node
-      //      Resource resource = new ClassPathResource("workflow_definition_3.json");
+      Resource resource = new ClassPathResource("workflow_definition_3.json");
       // 4. Add a new node
       //      Resource resource = new ClassPathResource("workflow_definition_4.json");
 
@@ -46,7 +46,7 @@ public class MarketingWorkflowStore {
       //      Resource resource = new ClassPathResource("random_distribution.json");
       //      Resource resource = new ClassPathResource("switch.json");
 
-      Resource resource = new ClassPathResource("mixing_delay_types.json");
+      //      Resource resource = new ClassPathResource("mixing_delay_types.json");
 
       DEFINITION = OBJECT_MAPPER.readValue(resource.getInputStream(), MarketingWorkflowDefinition.class);
 

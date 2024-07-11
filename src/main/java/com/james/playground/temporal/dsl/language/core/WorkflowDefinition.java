@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.james.playground.temporal.dsl.language.marketing.MarketingWorkflowDefinition;
+import com.james.playground.temporal.dsl.language.marketing.MarketingWorkflowDefinition.ExecutablePath;
 import com.james.playground.temporal.dsl.language.versioning.WorkflowChangeSignal;
 import java.util.Map;
 import java.util.Optional;
@@ -19,7 +20,7 @@ public interface WorkflowDefinition<T extends WorkflowDefinition<T>> {
   @JsonIgnore
   String getWorkflowIdPrefix();
 
-  WorkflowNode findNodeIgnoringDeletedNodes(String nodeId);
+  ExecutablePath findFirstExecutableNode(String nodeId);
 
   WorkflowNode findNodeAcceptingDeletedNode(String nodeId);
 
