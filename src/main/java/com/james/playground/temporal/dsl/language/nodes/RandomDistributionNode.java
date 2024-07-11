@@ -19,11 +19,10 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class RandomDistributionNode extends WorkflowNode {
+public class RandomDistributionNode extends BranchingNode {
   @JsonProperty(NodeType.PROPERTY_NAME)
   private final String type = NodeType.RANDOM_DISTRIBUTION;
 
-  private String convergenceNodeId;
   private List<RandomDistributionBranch> branches;
 
   @Override
@@ -41,6 +40,7 @@ public class RandomDistributionNode extends WorkflowNode {
   @NoArgsConstructor
   @AllArgsConstructor
   public static class RandomDistributionBranch {
+    private String id;
     private String nextNodeId;
     private Integer probability;
   }

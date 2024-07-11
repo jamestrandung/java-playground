@@ -32,7 +32,7 @@ public class TransitNode extends WorkflowNode {
 
   @Override
   public String accept(DelegatingVisitor visitor) {
-    return visitor.visit(this);
+    return null;
   }
 
   @Override

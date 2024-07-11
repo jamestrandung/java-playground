@@ -20,11 +20,10 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class SwitchNode extends WorkflowNode {
+public class SwitchNode extends BranchingNode {
   @JsonProperty(NodeType.PROPERTY_NAME)
   private final String type = NodeType.SWITCH;
 
-  private String convergenceNodeId;
   private List<SwitchCase> cases;
 
   @Override
@@ -42,6 +41,7 @@ public class SwitchNode extends WorkflowNode {
   @NoArgsConstructor
   @AllArgsConstructor
   public static class SwitchCase {
+    private String id;
     private String name;
     private Condition condition;
     private String nextNodeId;
