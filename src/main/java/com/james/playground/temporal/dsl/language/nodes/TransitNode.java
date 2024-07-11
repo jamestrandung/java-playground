@@ -23,7 +23,7 @@ public class TransitNode extends WorkflowNode {
   @JsonProperty(NodeType.PROPERTY_NAME)
   private final String type = NodeType.TRANSIT;
 
-  //  private TransitCategory category;
+  private TransitCategory category;
 
   @JsonIgnore
   public boolean isEndNode() {
@@ -40,9 +40,9 @@ public class TransitNode extends WorkflowNode {
     return Optional.empty();
   }
 
-  //  public enum TransitCategory {
-  //    GATE,
-  //    GO_TO_ACTION,
-  //    CONVERGENCE
-  //  }
+  public enum TransitCategory {
+    ENTRY_EXIT,
+    GO_TO_ACTION,
+    CONVERGENCE
+  }
 }

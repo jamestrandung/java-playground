@@ -24,6 +24,7 @@ public class SwitchNode extends WorkflowNode {
   @JsonProperty(NodeType.PROPERTY_NAME)
   private final String type = NodeType.SWITCH;
 
+  private String convergenceNodeId;
   private List<SwitchCase> cases;
 
   @Override

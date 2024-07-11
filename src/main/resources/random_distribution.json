@@ -10,6 +10,7 @@
     "START": {
       "@type": "TRANSIT",
       "id": "START",
+      "category": "ENTRY_EXIT",
       "nextNodeId": "1",
       "deletable": false,
       "activeInProduction": true
@@ -17,23 +18,41 @@
     "1": {
       "@type": "RANDOM_DISTRIBUTION",
       "id": "1",
+      "convergenceNodeId": "2",
       "branches": [
         {
           "probability": 2500,
-          "nextNodeId": "END"
+          "nextNodeId": "2"
         },
         {
           "probability": 5000,
-          "nextNodeId": "END"
+          "nextNodeId": "2"
         }
       ],
-      "nextNodeId": "END",
+      "nextNodeId": "2",
       "deletable": true,
       "activeInProduction": true
+    },
+    "2": {
+      "@type": "TRANSIT",
+      "id": "2",
+      "category": "CONVERGENCE",
+      "nextNodeId": "3",
+      "deletable": false,
+      "activeInProduction": true
+    },
+    "3": {
+      "@type": "PRINTER",
+      "id": "3",
+      "nextNodeId": "END",
+      "deletable": true,
+      "activeInProduction": true,
+      "text": "AFTER CONVERGENCE"
     },
     "END": {
       "@type": "TRANSIT",
       "id": "END",
+      "category": "ENTRY_EXIT",
       "deletable": false,
       "activeInProduction": true
     }

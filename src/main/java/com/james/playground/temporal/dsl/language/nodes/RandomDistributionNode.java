@@ -23,6 +23,7 @@ public class RandomDistributionNode extends WorkflowNode {
   @JsonProperty(NodeType.PROPERTY_NAME)
   private final String type = NodeType.RANDOM_DISTRIBUTION;
 
+  private String convergenceNodeId;
   private List<RandomDistributionBranch> branches;
 
   @Override
