@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import com.james.playground.temporal.dsl.language.core.NodeType.Constants;
 import com.james.playground.temporal.dsl.language.nodes.PrinterNode;
 import com.james.playground.temporal.dsl.language.nodes.RandomDistributionNode;
 import com.james.playground.temporal.dsl.language.nodes.SwitchNode;
@@ -26,13 +27,13 @@ import lombok.experimental.SuperBuilder;
 @FieldNameConstants
 @JsonTypeInfo(
     use = Id.NAME,
-    property = NodeType.PROPERTY_NAME)
+    property = Constants.PROPERTY_NAME)
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = TransitNode.class, name = NodeType.TRANSIT),
-    @JsonSubTypes.Type(value = PrinterNode.class, name = NodeType.PRINTER),
-    @JsonSubTypes.Type(value = DelayNode.class, name = NodeType.DELAY),
-    @JsonSubTypes.Type(value = RandomDistributionNode.class, name = NodeType.RANDOM_DISTRIBUTION),
-    @JsonSubTypes.Type(value = SwitchNode.class, name = NodeType.SWITCH),
+    @JsonSubTypes.Type(value = TransitNode.class, name = Constants.TRANSIT_VALUE),
+    @JsonSubTypes.Type(value = PrinterNode.class, name = Constants.PRINTER_VALUE),
+    @JsonSubTypes.Type(value = DelayNode.class, name = Constants.DELAY_VALUE),
+    @JsonSubTypes.Type(value = RandomDistributionNode.class, name = Constants.RANDOM_DISTRIBUTION_VALUE),
+    @JsonSubTypes.Type(value = SwitchNode.class, name = Constants.SWITCH_VALUE),
 })
 public abstract class WorkflowNode {
   public static final String[] IGNORABLE_FIELDS_FOR_WORKFLOW_EXECUTION = {
@@ -55,7 +56,7 @@ public abstract class WorkflowNode {
   private boolean activeInProduction;
 
   @JsonIgnore
-  public abstract String getType();
+  public abstract NodeType getType();
 
   public abstract String accept(DelegatingVisitor visitor);
 

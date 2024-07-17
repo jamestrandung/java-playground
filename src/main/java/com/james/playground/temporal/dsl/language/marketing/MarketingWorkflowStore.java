@@ -43,8 +43,8 @@ public class MarketingWorkflowStore {
       //      Resource resource = new ClassPathResource("long_delay_deleted.json");
 
       // Branching
-      Resource resource = new ClassPathResource("random_distribution.json");
-      //      Resource resource = new ClassPathResource("switch.json");
+      //      Resource resource = new ClassPathResource("random_distribution.json");
+      Resource resource = new ClassPathResource("switch.json");
 
       //      Resource resource = new ClassPathResource("mixing_delay_types.json");
 

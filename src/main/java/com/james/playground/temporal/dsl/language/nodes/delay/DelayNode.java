@@ -3,6 +3,7 @@ package com.james.playground.temporal.dsl.language.nodes.delay;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.james.playground.temporal.dsl.language.core.NodeType;
+import com.james.playground.temporal.dsl.language.core.NodeType.Constants;
 import com.james.playground.temporal.dsl.language.core.WorkflowNode;
 import com.james.playground.temporal.dsl.language.versioning.NodeChangeSignal;
 import com.james.playground.temporal.dsl.workflows.visitors.DelegatingVisitor;
@@ -24,8 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class DelayNode extends WorkflowNode {
-  @JsonProperty(NodeType.PROPERTY_NAME)
-  private final String type = NodeType.DELAY;
+  @JsonProperty(Constants.PROPERTY_NAME)
+  private final NodeType type = NodeType.DELAY;
 
   // Delay by duration
   private int durationInSeconds;

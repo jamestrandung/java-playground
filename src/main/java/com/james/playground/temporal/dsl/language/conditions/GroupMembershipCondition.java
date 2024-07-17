@@ -1,19 +1,23 @@
 package com.james.playground.temporal.dsl.language.conditions;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.james.playground.temporal.dsl.language.core.Condition;
+import com.james.playground.temporal.dsl.language.core.ConditionType;
+import com.james.playground.temporal.dsl.language.core.ConditionType.Constants;
 import com.james.playground.temporal.dsl.workflows.visitors.nodes.SwitchVisitor;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 @Data
-@SuperBuilder
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public class GroupMembershipCondition extends Condition {
+public class GroupMembershipCondition implements Condition {
+  @JsonProperty(Constants.PROPERTY_NAME)
+  private final ConditionType type = ConditionType.GROUP_MEMBERSHIP;
+
   private Long groupId;
   private boolean shouldBeInGroup;
 
