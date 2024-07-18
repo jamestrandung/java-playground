@@ -41,6 +41,11 @@ public class TransitNode extends WorkflowNode {
     return Optional.empty();
   }
 
+  @Override
+  protected boolean canBeDeleted() {
+    return this.category != TransitCategory.ENTRY_EXIT && this.category != TransitCategory.CONVERGENCE;
+  }
+
   public enum TransitCategory {
     ENTRY_EXIT,
     GO_TO_ACTION,

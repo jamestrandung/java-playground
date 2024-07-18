@@ -12,39 +12,46 @@
     "START": {
       "@type": "TRANSIT",
       "id": "START",
+      "category": "ENTRY_EXIT",
       "nextNodeId": "1",
+      "indegree": 0,
       "deletable": false,
-      "activeInProduction": true
+      "launched": true
     },
     "1": {
       "@type": "DELAY",
       "id": "1",
       "nextNodeId": "2",
+      "indegree": 1,
       "deletable": true,
-      "activeInProduction": true,
+      "launched": true,
       "durationInSeconds": 3600
     },
     "2": {
       "@type": "PRINTER",
       "id": "2",
       "nextNodeId": "3",
+      "indegree": 1,
       "deletable": true,
-      "activeInProduction": true,
+      "launched": true,
       "text": "Hello, World!"
     },
     "3": {
       "@type": "DELAY",
       "id": "3",
       "nextNodeId": "END",
+      "indegree": 1,
       "deletable": true,
-      "activeInProduction": true,
+      "launched": true,
       "durationInSeconds": 2
     },
     "END": {
       "@type": "TRANSIT",
       "id": "END",
+      "category": "ENTRY_EXIT",
+      "indegree": 1,
       "deletable": false,
-      "activeInProduction": true
+      "launched": true
     }
   }
 }

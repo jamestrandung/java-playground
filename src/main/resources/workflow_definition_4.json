@@ -10,47 +10,55 @@
     "START": {
       "@type": "TRANSIT",
       "id": "START",
+      "category": "ENTRY_EXIT",
       "nextNodeId": "1",
+      "indegree": 0,
       "deletable": false,
-      "activeInProduction": true
+      "launched": true
     },
     "1": {
       "@type": "DELAY",
       "id": "1",
       "nextNodeId": "2",
+      "indegree": 1,
       "deletable": true,
-      "activeInProduction": true,
+      "launched": true,
       "durationInSeconds": 5
     },
     "2": {
       "@type": "PRINTER",
       "id": "2",
       "nextNodeId": "3",
+      "indegree": 1,
       "deletable": true,
-      "activeInProduction": true,
+      "launched": true,
       "text": "Hello, Another World!"
     },
     "3": {
       "@type": "DELAY",
       "id": "3",
       "nextNodeId": "4",
+      "indegree": 1,
       "deletable": true,
-      "activeInProduction": true,
+      "launched": true,
       "durationInSeconds": 2
     },
     "4": {
       "@type": "PRINTER",
       "id": "4",
       "nextNodeId": "END",
+      "indegree": 1,
       "deletable": true,
-      "activeInProduction": true,
+      "launched": true,
       "text": "Goodbye, Another World!"
     },
     "END": {
       "@type": "TRANSIT",
       "id": "END",
+      "category": "ENTRY_EXIT",
+      "indegree": 1,
       "deletable": false,
-      "activeInProduction": true
+      "launched": true
     }
   }
 }

@@ -14,4 +14,9 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 public abstract class BranchingNode extends WorkflowNode {
   private String convergenceNodeId;
+
+  @Override
+  protected boolean canBeDeleted() {
+    return true;
+  }
 }

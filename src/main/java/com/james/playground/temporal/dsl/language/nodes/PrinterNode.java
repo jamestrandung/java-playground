@@ -34,4 +34,9 @@ public class PrinterNode extends WorkflowNode {
   public Optional<NodeChangeSignal> detectChange(WorkflowNode latest) {
     return Optional.empty();
   }
+
+  @Override
+  protected boolean canBeDeleted() {
+    return true;
+  }
 }

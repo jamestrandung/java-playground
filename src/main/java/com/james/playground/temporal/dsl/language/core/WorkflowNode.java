@@ -37,7 +37,7 @@ import lombok.experimental.SuperBuilder;
 })
 public abstract class WorkflowNode {
   public static final String[] IGNORABLE_FIELDS_FOR_WORKFLOW_EXECUTION = {
-      Fields.deletable, Fields.activeInProduction
+      "deletable", Fields.launched
   };
 
   public static final Set<Class<? extends WorkflowNode>> EXISTING_IMPLEMENTATIONS = Set.of(
@@ -50,10 +50,9 @@ public abstract class WorkflowNode {
 
   private String id;
   private String nextNodeId;
+  private Integer indegree;
   private Long deletedOn;
-
-  private boolean deletable;
-  private boolean activeInProduction;
+  private boolean launched;
 
   @JsonIgnore
   public abstract NodeType getType();
@@ -61,6 +60,12 @@ public abstract class WorkflowNode {
   public abstract String accept(DelegatingVisitor visitor);
 
   public abstract Optional<NodeChangeSignal> detectChange(WorkflowNode latest);
+
+  public boolean isDeletable() {
+    return this.indegree <= 1 && this.canBeDeleted();
+  }
+
+  protected abstract boolean canBeDeleted();
 
   @JsonIgnore
   public boolean isDeleted() {

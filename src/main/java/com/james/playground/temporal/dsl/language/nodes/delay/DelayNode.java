@@ -72,6 +72,11 @@ public class DelayNode extends WorkflowNode {
     return Optional.empty();
   }
 
+  @Override
+  protected boolean canBeDeleted() {
+    return true;
+  }
+
   @JsonIgnore
   public boolean isDelayByDuration() {
     return this.durationInSeconds > 0;
