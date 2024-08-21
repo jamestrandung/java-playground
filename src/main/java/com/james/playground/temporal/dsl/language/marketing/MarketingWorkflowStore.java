@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class MarketingWorkflowStore {
   public static final ObjectMapper OBJECT_MAPPER;
-  private static final MarketingWorkflowDefinition DEFINITION;
   private static final Map<String, MarketingWorkflowDefinition> CACHE;
   private static MarketingWorkflowStore INSTANCE;
 
@@ -50,9 +49,20 @@ public class MarketingWorkflowStore {
 
       //      Resource resource = new ClassPathResource("mixing_delay_types.json");
 
-      DEFINITION = OBJECT_MAPPER.readValue(resource.getInputStream(), MarketingWorkflowDefinition.class);
+      Resource resource1 = new ClassPathResource("long_delay.json");
+      Resource resource2 = new ClassPathResource("workflow_definition_1.json");
 
-      CACHE = new HashMap<>(Map.of("workflowDefinitionId", DEFINITION));
+      MarketingWorkflowDefinition definition = OBJECT_MAPPER.readValue(resource.getInputStream(), MarketingWorkflowDefinition.class);
+      MarketingWorkflowDefinition definition1 = OBJECT_MAPPER.readValue(resource1.getInputStream(), MarketingWorkflowDefinition.class);
+      MarketingWorkflowDefinition definition2 = OBJECT_MAPPER.readValue(resource2.getInputStream(), MarketingWorkflowDefinition.class);
+
+      CACHE = new HashMap<>(
+          Map.of(
+              "workflowDefinitionId", definition,
+              "workflowDefinitionId1", definition1,
+              "workflowDefinitionId2", definition2
+          )
+      );
 
     } catch (IOException e) {
       throw new RuntimeException(e);

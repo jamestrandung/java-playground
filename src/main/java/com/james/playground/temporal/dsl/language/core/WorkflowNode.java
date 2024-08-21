@@ -17,6 +17,7 @@ import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 
@@ -35,6 +36,7 @@ import lombok.experimental.SuperBuilder;
     @JsonSubTypes.Type(value = RandomDistributionNode.class, name = Constants.RANDOM_DISTRIBUTION_VALUE),
     @JsonSubTypes.Type(value = SwitchNode.class, name = Constants.SWITCH_VALUE),
 })
+@ToString(callSuper = true)
 public abstract class WorkflowNode {
   public static final String[] IGNORABLE_FIELDS_FOR_WORKFLOW_EXECUTION = {
       "deletable", Fields.launched
@@ -50,7 +52,7 @@ public abstract class WorkflowNode {
 
   private String id;
   private String nextNodeId;
-  private Integer indegree;
+  private int indegree;
   private Long deletedOn;
   private boolean launched;
 

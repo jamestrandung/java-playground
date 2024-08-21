@@ -2,6 +2,8 @@ package com.james.playground.controller.temporal;
 
 import com.james.playground.temporal.cancellation.CancellableWorkflow;
 import com.james.playground.temporal.cancellation.CancellingWorkflow;
+import com.james.playground.temporal.utils.AttributeFilter;
+import com.james.playground.temporal.utils.WorkflowFilter;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import lombok.extern.slf4j.Slf4j;
@@ -66,6 +68,30 @@ public class CancellationController {
         .exceptionally(ex -> {
           log.error("Cancellation failure: {}", ex.getMessage());
           return null;
+        });
+  }
+
+  @PostMapping("/search")
+  public void cancelViaSearch(@RequestParam Long userId) {
+    AttributeFilter userFilter         = AttributeFilter.create("CustomUserId", userId);
+    AttributeFilter workflowTypeFilter = AttributeFilter.create("WorkflowType", "MarketingWorkflow");
+    AttributeFilter executionStatus    = AttributeFilter.create("ExecutionStatus", "Running");
+
+    WorkflowFilter filter = WorkflowFilter.basic(userFilter)
+        .and(workflowTypeFilter)
+        .and(executionStatus);
+
+    log.info("Filter: {}", filter.toString());
+
+    this.workflowClient.listExecutions(filter.toString())
+        .forEach(metadata -> {
+          try {
+            this.workflowClient.newUntypedWorkflowStub(metadata.getExecution().getWorkflowId())
+                .cancel();
+            log.info("Cancelled: {}", metadata.getExecution().getWorkflowId());
+          } catch (Exception ex) {
+            log.error("Cancellation failure: {}", ex.getMessage());
+          }
         });
   }
 }

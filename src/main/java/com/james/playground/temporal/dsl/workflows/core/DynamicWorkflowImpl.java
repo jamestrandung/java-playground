@@ -9,6 +9,7 @@ import com.james.playground.temporal.dsl.language.nodes.TransitNode;
 import com.james.playground.temporal.dsl.language.versioning.NodeChangeSignal;
 import com.james.playground.temporal.dsl.language.versioning.WorkflowChangeSignal;
 import com.james.playground.temporal.dsl.workflows.visitors.DelegatingVisitor;
+import io.temporal.common.SearchAttributeKey;
 import io.temporal.workflow.Workflow;
 import java.util.List;
 import java.util.function.Supplier;
@@ -23,6 +24,8 @@ public abstract class DynamicWorkflowImpl<T extends WorkflowChangeSignal> implem
   public static final String CHANGE_SIGNAL_NAME = "handleChangeSignals";
   private static final Logger LOGGER = Workflow.getLogger(DynamicWorkflowImpl.class);
 
+  private static final SearchAttributeKey<Long> CUSTOM_USER_ID_SEARCH_ATTRIBUTE = SearchAttributeKey.forLong("CustomUserId");
+
   protected DynamicWorkflowInput input;
   protected Supplier<WorkflowDefinition<?>> workflowDefinitionSupplier;
   protected DelegatingVisitor visitor;
@@ -30,6 +33,8 @@ public abstract class DynamicWorkflowImpl<T extends WorkflowChangeSignal> implem
   @Override
   public void execute(DynamicWorkflowInput input) {
     this.init(input);
+
+    Workflow.upsertTypedSearchAttributes(CUSTOM_USER_ID_SEARCH_ATTRIBUTE.valueSet(this.input.getUserId()));
 
     String nextNodeId = TransitNode.START_ID;
     while (StringUtils.isNotBlank(nextNodeId)) {
