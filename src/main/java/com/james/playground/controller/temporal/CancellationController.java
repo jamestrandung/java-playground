@@ -1,11 +1,16 @@
 package com.james.playground.controller.temporal;
 
+import com.google.protobuf.ByteString;
 import com.james.playground.temporal.cancellation.CancellableWorkflow;
 import com.james.playground.temporal.cancellation.CancellingWorkflow;
 import com.james.playground.temporal.utils.AttributeFilter;
 import com.james.playground.temporal.utils.WorkflowFilter;
+import io.temporal.api.workflow.v1.WorkflowExecutionInfo;
+import io.temporal.api.workflowservice.v1.ListWorkflowExecutionsRequest;
+import io.temporal.api.workflowservice.v1.ListWorkflowExecutionsResponse;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
+import io.temporal.serviceclient.WorkflowServiceStubs;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class CancellationController {
   @Autowired
   private WorkflowClient workflowClient;
+
+  @Autowired
+  private WorkflowServiceStubs workflowServiceStubs;
 
   @PostMapping
   public void waitForCancellation(@RequestParam String workflowIdSuffix) {
@@ -83,15 +91,39 @@ public class CancellationController {
 
     log.info("Filter: {}", filter.toString());
 
-    this.workflowClient.listExecutions(filter.toString())
-        .forEach(metadata -> {
-          try {
-            this.workflowClient.newUntypedWorkflowStub(metadata.getExecution().getWorkflowId())
-                .cancel();
-            log.info("Cancelled: {}", metadata.getExecution().getWorkflowId());
-          } catch (Exception ex) {
-            log.error("Cancellation failure: {}", ex.getMessage());
-          }
-        });
+    //    this.workflowClient.listExecutions(filter.toString())
+    //        .forEach(metadata -> {
+    //          try {
+    //            this.workflowClient.newUntypedWorkflowStub(metadata.getExecution().getWorkflowId())
+    //                .cancel();
+    //            log.info("Cancelled: {}", metadata.getExecution().getWorkflowId());
+    //          } catch (Exception ex) {
+    //            log.error("Cancellation failure: {}", ex.getMessage());
+    //          }
+    //        });
+
+    ByteString nextPageToken = ByteString.EMPTY;
+    do {
+      ListWorkflowExecutionsRequest request = ListWorkflowExecutionsRequest.newBuilder()
+          .setNamespace("default")
+          .setQuery(filter.toString())
+          .setNextPageToken(nextPageToken)
+          .setPageSize(500)
+          .build();
+
+      ListWorkflowExecutionsResponse response = this.workflowServiceStubs.blockingStub().listWorkflowExecutions(request);
+      for (WorkflowExecutionInfo executionInfo : response.getExecutionsList()) {
+        try {
+          this.workflowClient.newUntypedWorkflowStub(executionInfo.getExecution().getWorkflowId())
+              .cancel();
+          log.info("Cancelled: {}", executionInfo.getExecution().getWorkflowId());
+        } catch (Exception ex) {
+          log.error("Cancellation failure: {}", ex.getMessage());
+        }
+      }
+
+      nextPageToken = response.getNextPageToken();
+
+    } while (!nextPageToken.isEmpty());
   }
 }
