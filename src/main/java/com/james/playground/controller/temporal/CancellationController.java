@@ -1,5 +1,8 @@
 package com.james.playground.controller.temporal;
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.james.playground.temporal.cancellation.CancellableWorkflow;
 import com.james.playground.temporal.cancellation.CancellingWorkflow;
@@ -8,10 +11,17 @@ import com.james.playground.temporal.utils.WorkflowFilter;
 import io.temporal.api.workflow.v1.WorkflowExecutionInfo;
 import io.temporal.api.workflowservice.v1.ListWorkflowExecutionsRequest;
 import io.temporal.api.workflowservice.v1.ListWorkflowExecutionsResponse;
+import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
+import io.temporal.common.SearchAttributeKey;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -80,10 +90,10 @@ public class CancellationController {
   }
 
   @PostMapping("/search")
-  public void cancelViaSearch(@RequestParam Long userId) {
-    AttributeFilter userFilter         = AttributeFilter.create("CustomUserId", userId);
-    AttributeFilter workflowTypeFilter = AttributeFilter.create("WorkflowType", "MarketingWorkflow");
-    AttributeFilter executionStatus    = AttributeFilter.create("ExecutionStatus", "Running");
+  public void cancelViaSearch(@RequestParam Long userId) throws ExecutionException, InterruptedException {
+    AttributeFilter userFilter = AttributeFilter.equals(SearchAttributeKey.forLong("CustomUserId"), userId);
+    AttributeFilter workflowTypeFilter = AttributeFilter.equals(SearchAttributeKey.forKeyword("WorkflowType"), "MarketingWorkflow");
+    AttributeFilter executionStatus = AttributeFilter.equals(SearchAttributeKey.forKeyword("ExecutionStatus"), "Running");
 
     WorkflowFilter filter = WorkflowFilter.basic(userFilter)
         .and(workflowTypeFilter)
@@ -91,36 +101,48 @@ public class CancellationController {
 
     log.info("Filter: {}", filter.toString());
 
-    //    this.workflowClient.listExecutions(filter.toString())
-    //        .forEach(metadata -> {
-    //          try {
-    //            this.workflowClient.newUntypedWorkflowStub(metadata.getExecution().getWorkflowId())
-    //                .cancel();
-    //            log.info("Cancelled: {}", metadata.getExecution().getWorkflowId());
-    //          } catch (Exception ex) {
-    //            log.error("Cancellation failure: {}", ex.getMessage());
-    //          }
-    //        });
-
     ByteString nextPageToken = ByteString.EMPTY;
+
     do {
       ListWorkflowExecutionsRequest request = ListWorkflowExecutionsRequest.newBuilder()
-          .setNamespace("default")
+          .setNamespace(this.workflowClient.getOptions().getNamespace())
           .setQuery(filter.toString())
           .setNextPageToken(nextPageToken)
           .setPageSize(500)
           .build();
 
+      List<ListenableFuture<?>> futures = new ArrayList<>();
+
       ListWorkflowExecutionsResponse response = this.workflowServiceStubs.blockingStub().listWorkflowExecutions(request);
       for (WorkflowExecutionInfo executionInfo : response.getExecutionsList()) {
         try {
-          this.workflowClient.newUntypedWorkflowStub(executionInfo.getExecution().getWorkflowId())
-              .cancel();
-          log.info("Cancelled: {}", executionInfo.getExecution().getWorkflowId());
+          RequestCancelWorkflowExecutionRequest req = RequestCancelWorkflowExecutionRequest.newBuilder()
+              .setRequestId(UUID.randomUUID().toString())
+              .setWorkflowExecution(executionInfo.getExecution())
+              .setNamespace(this.workflowClient.getOptions().getNamespace())
+              .setIdentity(this.workflowClient.getOptions().getIdentity())
+              .setReason("Because I like")
+              .build();
+
+          var future = this.workflowServiceStubs.futureStub().requestCancelWorkflowExecution(req);
+
+          futures.add(
+              Futures.catching(future, Exception.class, ex -> {
+                log.error(
+                    "TemporalActivityImpl.cancelWorkflows failed, workflow ID: {}, error: {}",
+                    executionInfo.getExecution().getWorkflowId(), ExceptionUtils.getStackTrace(ex)
+                );
+
+                return null;
+              }, MoreExecutors.directExecutor())
+          );
+
         } catch (Exception ex) {
           log.error("Cancellation failure: {}", ex.getMessage());
         }
       }
+
+      Futures.allAsList(futures).get();
 
       nextPageToken = response.getNextPageToken();
 

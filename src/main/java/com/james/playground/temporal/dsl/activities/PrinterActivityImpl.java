@@ -1,6 +1,8 @@
 package com.james.playground.temporal.dsl.activities;
 
 import com.james.playground.temporal.dsl.dto.DynamicActivityResult;
+import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.spring.boot.ActivityImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -11,7 +13,11 @@ import org.springframework.stereotype.Component;
 public class PrinterActivityImpl implements PrinterActivity {
   @Override
   public DynamicActivityResult print(PrinterInput input) {
-    log.info("Printing, user ID: {}, text: {}", input.getUserId(), input.getNode().getText());
+    ActivityExecutionContext context = Activity.getExecutionContext();
+    log.info(
+        "Printing, workflow ID: {}, user ID: {}, text: {}",
+        context.getInfo().getWorkflowId(), input.getUserId(), input.getNode().getText()
+    );
 
     return DynamicActivityResult.builder()
         .nextNodeId(input.getNode().getNextNodeId())

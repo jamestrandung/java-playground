@@ -1,21 +1,29 @@
 package com.james.playground.temporal.utils;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder(access = AccessLevel.PRIVATE)
 public class WorkflowFilter {
   private static final String FILTER_FORMAT = "(%s) %s (%s)";
 
-  private WorkflowFilterOperator operator;
+  private WorkflowFilter.WorkflowFilterOperator operator;
 
   private AttributeFilter attributeFilter;
   private WorkflowFilter left;
   private WorkflowFilter right;
 
-  public static WorkflowFilter basic(AttributeFilter attributeFilter) {
+  public static WorkflowFilter basic(
+      AttributeFilter attributeFilter
+  ) {
     return WorkflowFilter.builder()
-        .operator(WorkflowFilterOperator.NONE)
+        .operator(WorkflowFilter.WorkflowFilterOperator.NONE)
         .attributeFilter(attributeFilter)
         .build();
   }
@@ -26,7 +34,7 @@ public class WorkflowFilter {
     }
 
     return WorkflowFilter.builder()
-        .operator(WorkflowFilterOperator.AND)
+        .operator(WorkflowFilter.WorkflowFilterOperator.AND)
         .left(this)
         .right(right)
         .build();
@@ -38,7 +46,7 @@ public class WorkflowFilter {
     }
 
     return WorkflowFilter.builder()
-        .operator(WorkflowFilterOperator.AND)
+        .operator(WorkflowFilter.WorkflowFilterOperator.AND)
         .left(this)
         .right(WorkflowFilter.basic(right))
         .build();
@@ -50,7 +58,7 @@ public class WorkflowFilter {
     }
 
     return WorkflowFilter.builder()
-        .operator(WorkflowFilterOperator.OR)
+        .operator(WorkflowFilter.WorkflowFilterOperator.OR)
         .left(this)
         .right(right)
         .build();
@@ -62,21 +70,22 @@ public class WorkflowFilter {
     }
 
     return WorkflowFilter.builder()
-        .operator(WorkflowFilterOperator.OR)
+        .operator(WorkflowFilter.WorkflowFilterOperator.OR)
         .left(this)
         .right(WorkflowFilter.basic(right))
         .build();
   }
 
-  public String toString() {
-    if (this.operator == WorkflowFilterOperator.NONE) {
-      return this.attributeFilter.toString();
+  public String toQueryString() {
+    if (this.operator == WorkflowFilter.WorkflowFilterOperator.NONE) {
+      return this.attributeFilter.toQueryString();
     }
 
-    return String.format(FILTER_FORMAT, this.left, this.operator.name(), this.right);
+    return String.format(FILTER_FORMAT, this.left.toQueryString(), this.operator.name(), this.right.toQueryString());
   }
 
   public enum WorkflowFilterOperator {
     NONE, AND, OR
   }
 }
+

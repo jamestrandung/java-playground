@@ -37,7 +37,7 @@ public class IntegrationConfig {
   @Bean
   public MessageChannel aggregateChannel() {
     return new DirectChannel();
-  }
+  } 
 
   @Bean
   public MessageChannel sumChannel() {

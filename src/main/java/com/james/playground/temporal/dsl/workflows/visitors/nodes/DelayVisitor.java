@@ -8,6 +8,7 @@ import com.james.playground.temporal.dsl.language.core.WorkflowDefinition;
 import com.james.playground.temporal.dsl.language.core.WorkflowNode;
 import com.james.playground.temporal.dsl.language.nodes.delay.DelayInterruptionSignal;
 import com.james.playground.temporal.dsl.language.nodes.delay.DelayNode;
+import io.temporal.common.SearchAttributeKey;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
 import java.time.Instant;
@@ -54,21 +55,25 @@ public class DelayVisitor extends NodeVisitor<DelayNode> {
         return this.activeNode.getNextNodeId();
       }
 
-      this.localUserGroupActivity.addToGroup(
+      this.userGroupActivity.addToGroup(
           UserGroupInput.builder()
               .userId(this.input.getUserId())
               .groupId(this.activeNode.getActiveGroupId())
               .build()
       );
+
+      Workflow.upsertTypedSearchAttributes(SearchAttributeKey.forKeyword("CustomCurrentBlockingNodeId").valueSet(node.getId()));
 
       String nextNodeId = this.doDelay(false);
 
-      this.localUserGroupActivity.removeFromGroup(
+      this.userGroupActivity.removeFromGroup(
           UserGroupInput.builder()
               .userId(this.input.getUserId())
               .groupId(this.activeNode.getActiveGroupId())
               .build()
       );
+
+      Workflow.upsertTypedSearchAttributes(SearchAttributeKey.forKeyword("CustomCurrentBlockingNodeId").valueSet(null));
 
       return nextNodeId;
 

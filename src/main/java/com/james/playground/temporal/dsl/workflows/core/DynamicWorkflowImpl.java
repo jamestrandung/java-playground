@@ -10,6 +10,7 @@ import com.james.playground.temporal.dsl.language.versioning.NodeChangeSignal;
 import com.james.playground.temporal.dsl.language.versioning.WorkflowChangeSignal;
 import com.james.playground.temporal.dsl.workflows.visitors.DelegatingVisitor;
 import io.temporal.common.SearchAttributeKey;
+import io.temporal.workflow.CancellationScope;
 import io.temporal.workflow.Workflow;
 import java.util.List;
 import java.util.function.Supplier;
@@ -32,23 +33,32 @@ public abstract class DynamicWorkflowImpl<T extends WorkflowChangeSignal> implem
 
   @Override
   public void execute(DynamicWorkflowInput input) {
-    this.init(input);
+    try {
+      this.init(input);
 
-    Workflow.upsertTypedSearchAttributes(CUSTOM_USER_ID_SEARCH_ATTRIBUTE.valueSet(this.input.getUserId()));
+      Workflow.upsertTypedSearchAttributes(CUSTOM_USER_ID_SEARCH_ATTRIBUTE.valueSet(this.input.getUserId()));
 
-    String nextNodeId = TransitNode.START_ID;
-    while (StringUtils.isNotBlank(nextNodeId)) {
-      WorkflowNode node = this.findFirstExecutableNode(nextNodeId);
-      if (node == null) {
-        break;
+      String nextNodeId = TransitNode.START_ID;
+      while (StringUtils.isNotBlank(nextNodeId)) {
+        WorkflowNode node = this.findFirstExecutableNode(nextNodeId);
+        if (node == null) {
+          break;
+        }
+
+        log.info("Node: {}", node);
+        nextNodeId = node.accept(this.visitor);
+
+        if (NodeType.DELAY.equals(node.getType()) && this.shouldExitEarly()) {
+          break;
+        }
       }
 
-      log.info("Node: {}", node);
-      nextNodeId = node.accept(this.visitor);
+    } finally {
+      CancellationScope detached = Workflow.newDetachedCancellationScope(() -> {
+        LOGGER.info("Performing cleanup upon completion or cancellation");
+      });
 
-      if (NodeType.DELAY.equals(node.getType()) && this.shouldExitEarly()) {
-        break;
-      }
+      detached.run();
     }
   }
 
