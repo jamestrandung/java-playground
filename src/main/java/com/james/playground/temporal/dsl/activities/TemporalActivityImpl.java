@@ -1,18 +1,28 @@
 package com.james.playground.temporal.dsl.activities;
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
+import io.temporal.api.common.v1.Payloads;
 import io.temporal.api.workflow.v1.WorkflowExecutionInfo;
 import io.temporal.api.workflowservice.v1.ListWorkflowExecutionsRequest;
 import io.temporal.api.workflowservice.v1.ListWorkflowExecutionsResponse;
+import io.temporal.api.workflowservice.v1.SignalWorkflowExecutionRequest;
 import io.temporal.client.WorkflowClient;
-import io.temporal.client.WorkflowStub;
+import io.temporal.client.WorkflowClientOptions;
+import io.temporal.common.converter.DataConverter;
+import io.temporal.common.interceptors.Header;
+import io.temporal.internal.common.HeaderUtils;
+import io.temporal.payload.context.WorkflowSerializationContext;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.spring.boot.ActivityImpl;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,7 +39,18 @@ public class TemporalActivityImpl implements TemporalActivity {
 
   @Override
   public void signalWorkflows(SignalWorkflowsRequest request) {
+    try {
+      this.doSignalWorkflows(request);
+    } catch (Exception ex) {
+
+    }
+  }
+
+  void doSignalWorkflows(SignalWorkflowsRequest request) throws ExecutionException, InterruptedException {
     ActivityExecutionContext context = Activity.getExecutionContext();
+
+    WorkflowClientOptions options = this.workflowClient.getOptions();
+
 
     /*
     At run-time, we may have millions of workflows running. Hence, this activity may
@@ -48,27 +69,29 @@ public class TemporalActivityImpl implements TemporalActivity {
           .setPageSize(LIST_EXECUTION_PAGE_SIZE)
           .build();
 
-      List<CompletableFuture<Void>> futures = new ArrayList<>();
+      List<ListenableFuture<?>> futures = new ArrayList<>();
 
       ListWorkflowExecutionsResponse listResponse = this.workflowServiceStubs.blockingStub().listWorkflowExecutions(listRequest);
       for (WorkflowExecutionInfo executionInfo : listResponse.getExecutionsList()) {
-        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-          try {
-            WorkflowStub workflowStub = this.workflowClient.newUntypedWorkflowStub(executionInfo.getExecution().getWorkflowId());
-            workflowStub.signal(request.getSignalName(), request.getPayload());
+        DataConverter dataConverterWithSignalContext = options.getDataConverter()
+            .withContext(new WorkflowSerializationContext(options.getNamespace(), executionInfo.getExecution().getWorkflowId()));
+        Optional<Payloads> inputArgs = dataConverterWithSignalContext.toPayloads(request.getPayload());
 
-          } catch (Exception ex) {
-            log.info(
-                "Failed to send Signal, workflow ID: {}, error: {}",
-                executionInfo.getExecution().getWorkflowId(), ex.getMessage()
-            );
-          }
-        });
+        SignalWorkflowExecutionRequest.Builder signalRequest = SignalWorkflowExecutionRequest.newBuilder()
+            .setRequestId(UUID.randomUUID().toString())
+            .setWorkflowExecution(executionInfo.getExecution())
+            .setNamespace(this.workflowClient.getOptions().getNamespace())
+            .setIdentity(this.workflowClient.getOptions().getIdentity())
+            .setHeader(HeaderUtils.toHeaderGrpc(Header.empty(), null))
+            .setSignalName(request.getSignalName());
 
+        inputArgs.ifPresent(signalRequest::setInput);
+
+        var future = this.workflowServiceStubs.futureStub().signalWorkflowExecution(signalRequest.build());
         futures.add(future);
       }
 
-      CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+      Futures.allAsList(futures).get();
 
       nextPageToken = listResponse.getNextPageToken();
       context.heartbeat(nextPageToken);
