@@ -12,18 +12,23 @@ import io.temporal.common.converter.JacksonJsonPayloadConverter;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.spring.boot.TemporalOptionsCustomizer;
 import io.temporal.spring.boot.WorkerOptionsCustomizer;
+import io.temporal.spring.boot.autoconfigure.RootNamespaceAutoConfiguration.WorkerFactoryStarter;
 import io.temporal.testing.TestEnvironmentOptions;
+import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerFactoryOptions;
 import io.temporal.worker.WorkerOptions;
 import io.temporal.worker.WorkflowImplementationOptions;
 import javax.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Slf4j
 @Configuration
 public class TemporalConfigs {
+  public static boolean isTemporalAvailable = false;
+
   @Bean
   public WorkerOptionsCustomizer workerOptions() {
     return new WorkerOptionsCustomizer() {
@@ -113,5 +118,28 @@ public class TemporalConfigs {
         return optionsBuilder;
       }
     };
+  }
+
+  @Bean
+  public WorkerFactoryStarter customWorkerFactoryStarter(WorkerFactory workerFactory) {
+    return new CustomWorkerFactoryStarter(workerFactory);
+  }
+
+  public static class CustomWorkerFactoryStarter extends WorkerFactoryStarter {
+    public CustomWorkerFactoryStarter(WorkerFactory workerFactory) {
+      super(workerFactory);
+    }
+
+    public void onApplicationEvent(@Nonnull ApplicationReadyEvent event) {
+      System.out.println("CustomWorkerFactoryStarter.onApplicationEvent");
+
+      // TODO: check cluster availability by sending a dummy request to the Temporal frontend service
+      boolean isClusterAvailable = true;
+
+      if (isClusterAvailable) {
+        isTemporalAvailable = true;
+        super.onApplicationEvent(event);
+      }
+    }
   }
 }

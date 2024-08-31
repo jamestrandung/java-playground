@@ -1,6 +1,7 @@
 spring:
   application.name: playground
   temporal:
+    start-workers: false
     connection:
       target: local
     workers-auto-discovery:
