@@ -2,15 +2,18 @@ package com.james.playground.temporal.scheduling;
 
 import com.james.playground.controller.temporal.ScheduleController.ScheduledMoneyTransferDetails;
 import com.james.playground.temporal.moneytransfer.workflows.MoneyTransferWorkflow;
+import io.grpc.StatusRuntimeException;
 import io.temporal.api.enums.v1.ScheduleOverlapPolicy;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.schedules.Schedule;
 import io.temporal.client.schedules.ScheduleActionStartWorkflow;
+import io.temporal.client.schedules.ScheduleAlreadyRunningException;
 import io.temporal.client.schedules.ScheduleClient;
 import io.temporal.client.schedules.ScheduleHandle;
 import io.temporal.client.schedules.ScheduleOptions;
 import io.temporal.client.schedules.SchedulePolicy;
 import io.temporal.client.schedules.ScheduleSpec;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -53,7 +56,25 @@ public class ScheduledMoneyTransfer {
         .setTriggerImmediately(false) // using true would trigger the workflow once immediately after the schedule is created
         .build();
 
-    this.scheduleClient.createSchedule(SCHEDULE_NAME, schedule, options);
+    try {
+      this.scheduleClient.createSchedule(SCHEDULE_NAME, schedule, options);
+    } catch (ScheduleAlreadyRunningException ex) {
+      System.out.println(ex.getMessage());
+      System.out.println(ex.getCause().getMessage());
+      System.out.println(ex.getCause().getClass());
+      System.out.println(ExceptionUtils.getRootCause(ex).getMessage());
+      System.out.println(ExceptionUtils.getRootCause(ex).getClass());
+
+    } catch (StatusRuntimeException ex) {
+      System.out.println(ex.getMessage());
+      System.out.println(ex.getStatus());
+
+    } catch (Exception ex) {
+      System.out.println(ex.getMessage());
+      System.out.println(ex.getClass());
+
+      throw ex;
+    }
   }
 
   public void manageMoneyTransferSchedule(String action) {
