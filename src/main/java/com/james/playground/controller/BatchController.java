@@ -27,7 +27,7 @@ public class BatchController {
     for (int i = 0; i < limit; i++) {
       int input = i;
 
-      CompletableFuture<Void> future = mathGateway.multiplyByTwoSingle(input)
+      CompletableFuture<Void> future = this.mathGateway.multiplyByTwoSingle(input)
           .thenAccept(result -> {
             log.info("TestController.batch single result, input: {}, output: {}", input, result);
           })
@@ -57,9 +57,9 @@ public class BatchController {
       int input              = i;
       int finalCorrelationId = correlationId == null ? i % 2 : correlationId;
 
-      CompletableFuture<Void> future = mathGateway.multiplyByTwoAggregate(finalCorrelationId, input)
+      CompletableFuture<Void> future = this.mathGateway.multiplyByTwoAggregate(finalCorrelationId, input)
           .thenAccept(result -> {
-            log.info("TestController.multiplyAggregate result, input: {}, output: {}", input, result);
+            log.info("TestController.multiplyAggregate result, input: {}, output: {}", input, result.orElse(null));
           })
           .exceptionally(throwable -> {
             log.info("TestController.multiplyAggregate failed, input: {}, error: {}", input, throwable.getMessage());
@@ -87,9 +87,9 @@ public class BatchController {
       int input              = i;
       int finalCorrelationId = correlationId == null ? i % 2 : correlationId;
 
-      CompletableFuture<Void> future = mathGateway.sumAggregate(finalCorrelationId, input)
+      CompletableFuture<Void> future = this.mathGateway.sumAggregate(finalCorrelationId, input)
           .thenAccept(result -> {
-            log.info("TestController.sumAggregate result, input: {}, output: {}", input, result);
+            log.info("TestController.sumAggregate result, input: {}, output: {}", input, result.orElse(null));
           })
           .exceptionally(throwable -> {
             log.info("TestController.sumAggregate failed, input: {}, error: {}", input, throwable.getMessage());
@@ -103,6 +103,36 @@ public class BatchController {
     CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
     log.info("TestController.sumAggregate finished");
+
+    return "DONE";
+  }
+
+  @PostMapping("/echo/aggregate")
+  public String echoAggregate(@RequestParam int limit, @RequestParam(required = false) Integer correlationId) {
+    log.info("TestController.echoAggregate start");
+
+    List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+    for (int i = 0; i < limit; i++) {
+      int input              = i;
+      int finalCorrelationId = correlationId == null ? i % 2 : correlationId;
+
+      CompletableFuture<Void> future = this.mathGateway.echoAggregate(finalCorrelationId, input)
+          .thenAccept(result -> {
+            log.info("TestController.echoAggregate result, input: {}, output: {}", input, result);
+          })
+          .exceptionally(throwable -> {
+            log.info("TestController.echoAggregate failed, input: {}, error: {}", input, throwable.getMessage());
+
+            return null;
+          });
+
+      futures.add(future);
+    }
+
+    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+    log.info("TestController.echoAggregate finished");
 
     return "DONE";
   }

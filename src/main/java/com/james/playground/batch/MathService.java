@@ -7,14 +7,16 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class MathService {
-  public int sum(List<Integer> numbers) {
+  public Integer sum(List<Integer> numbers) {
     try {
       Thread.sleep(200);
     } catch (Exception ex) {
 
     }
 
-    return numbers.stream().mapToInt(Integer::intValue).sum();
+    return null;
+
+    //    return numbers.stream().mapToInt(Integer::intValue).sum();
   }
 
   public int sumExceptionally(List<Integer> numbers) {
@@ -35,5 +37,9 @@ public class MathService {
 
   public Map<Integer, Integer> multiplyListByTwoExceptionally(List<Integer> numbers) {
     throw new RuntimeException("Exception thrown from MathService.multiplyListByTwoExceptionally()");
+  }
+
+  public void echo(List<Integer> numbers) {
+    System.out.println("echo: " + numbers);
   }
 }

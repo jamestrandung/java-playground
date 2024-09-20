@@ -2,6 +2,7 @@ package com.james.playground.batch;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import one.util.streamex.StreamEx;
@@ -37,10 +38,15 @@ public class IntegrationConfig {
   @Bean
   public MessageChannel aggregateChannel() {
     return new DirectChannel();
-  } 
+  }
 
   @Bean
   public MessageChannel sumChannel() {
+    return new DirectChannel();
+  }
+
+  @Bean
+  public MessageChannel echoChannel() {
     return new DirectChannel();
   }
 
@@ -49,7 +55,7 @@ public class IntegrationConfig {
     /* WORKING IN BOTH HAPPY AND EXCEPTION PATHS */
 
     return IntegrationFlows.from(this.singleChannel())
-        .handle((payload, headers) -> mathService.multiplyByTwoExceptionally((Integer) payload))
+        .handle((payload, headers) -> this.mathService.multiplyByTwoExceptionally((Integer) payload))
         .get();
 
     /* NOT WORKING */
@@ -86,7 +92,7 @@ public class IntegrationConfig {
                     .map(message -> (Integer) message.getPayload())
                     .toList();
 
-                Map<Integer, Integer> results = mathService.multiplyListByTwo(inputs);
+                Map<Integer, Integer> results = this.mathService.multiplyListByTwo(inputs);
 
                 List<Pair<Object, Integer>> payload = StreamEx.of(group.getMessages())
                     .map(message ->
@@ -112,13 +118,15 @@ public class IntegrationConfig {
         .log()
         .split()
         .log()
-        .handle(Pair.class, (payload, headers) ->
-            MessageBuilder.withPayload(payload.getRight())
-                .copyHeaders(headers)
-                .setReplyChannel((MessageChannel) payload.getLeft())
-                .setErrorChannel((MessageChannel) payload.getLeft())
-                .build()
-        )
+        .handle(Pair.class, (payload, headers) -> {
+          Object result = (payload.getRight() instanceof Throwable) ? payload.getRight() : Optional.ofNullable(payload.getRight());
+
+          return MessageBuilder.withPayload(result)
+              .copyHeaders(headers)
+              .setReplyChannel((MessageChannel) payload.getLeft())
+              .setErrorChannel((MessageChannel) payload.getLeft())
+              .build();
+        })
         .log()
         .handle((payload, headers) -> payload)
         .get();
@@ -187,9 +195,9 @@ public class IntegrationConfig {
               log.info("IntegrationConfig.processSumAggregate message count: {}", CollectionUtils.size(group.getMessages()));
 
               try {
-                int sum = StreamEx.of(group.getMessages())
+                Integer sum = StreamEx.of(group.getMessages())
                     .map(message -> (Integer) message.getPayload())
-                    .toListAndThen(mathService::sum);
+                    .toListAndThen(this.mathService::sumExceptionally);
 
                 List<Pair<Object, Integer>> payload = group.getMessages()
                     .stream()
@@ -208,49 +216,84 @@ public class IntegrationConfig {
                 return MessageBuilder.withPayload(payload).build();
               }
             })
+            .requiresReply(true)
         )
         .log()
         .split()
         .log()
-        .handle(Pair.class, (payload, headers) ->
-            MessageBuilder.withPayload(payload.getRight())
-                .copyHeaders(headers)
-                .setReplyChannel((MessageChannel) payload.getLeft())
-                .setErrorChannel((MessageChannel) payload.getLeft())
-                .build()
-        )
+        .handle(Pair.class, (payload, headers) -> {
+          Object result = (payload.getRight() instanceof Throwable) ? payload.getRight() : Optional.ofNullable(payload.getRight());
+
+          return MessageBuilder.withPayload(result)
+              .copyHeaders(headers)
+              .setReplyChannel((MessageChannel) payload.getLeft())
+              .setErrorChannel((MessageChannel) payload.getLeft())
+              .build();
+        })
         .log()
         .handle((payload, headers) -> payload)
         .get();
+  }
 
-    //    return IntegrationFlows.from(this.sumChannel())
-    //        .log()
-    //        .aggregate(aggregator -> aggregator
-    //            .messageStore(new SimpleMessageStore()) // Infinite capacity
-    //            .correlationStrategy(new HeaderAttributeCorrelationStrategy("correlationId"))
-    //            .releaseStrategy(new MessageCountReleaseStrategy(5)) // Max batch size
-    //            .groupTimeout(1000)  // Timeout for releasing the batch
-    //            .expireGroupsUponCompletion(true)
-    //            .expireGroupsUponTimeout(true)
-    //            .sendPartialResultOnExpiry(true)
-    //            //            .async(true)
-    //            .outputProcessor(group -> {
-    //              log.info("IntegrationConfig.processSumAggregate message count: {}", CollectionUtils.size(group.getMessages()));
-    //
-    //              try {
-    //                return StreamEx.of(group.getMessages())
-    //                    .map(message -> (Integer) message.getPayload())
-    //                    .toListAndThen(mathService::sum);
-    //
-    //              } catch (Exception ex) {
-    //                log.info("IntegrationConfig.processSumAggregate grouping exception: {}", CollectionUtils.size(group.getMessages()));
-    //
-    //                return ex;
-    //              }
-    //            })
-    //        )
-    //        .log()
-    //        .handle((payload, headers) -> payload)
-    //        .get();
+  @Bean
+  public IntegrationFlow processEchoAggregate() {
+    /* WORKING IN BOTH HAPPY AND EXCEPTION PATHS */
+
+    return IntegrationFlows.from(this.echoChannel())
+        .log()
+        .aggregate(aggregator -> aggregator
+            .messageStore(new SimpleMessageStore()) // Infinite capacity
+            .correlationStrategy(new HeaderAttributeCorrelationStrategy("correlationId"))
+            .releaseStrategy(new MessageCountReleaseStrategy(5)) // Max batch size
+            .groupTimeout(1000)  // Timeout for releasing the batch
+            .expireGroupsUponCompletion(true)
+            .expireGroupsUponTimeout(true)
+            .sendPartialResultOnExpiry(true)
+            .outputProcessor(group -> {
+              log.info("IntegrationConfig.processEcho message count: {}", CollectionUtils.size(group.getMessages()));
+
+              try {
+                List<Integer> inputs = StreamEx.of(group.getMessages())
+                    .map(message -> (Integer) message.getPayload())
+                    .toList();
+
+                this.mathService.echo(inputs);
+
+                List<Pair<Object, Object>> payload = StreamEx.of(group.getMessages())
+                    .map(message ->
+                             Pair.of(
+                                 message.getHeaders().getReplyChannel(),
+                                 null
+                             )
+                    ).toList();
+
+                return MessageBuilder.withPayload(payload).build();
+
+              } catch (Exception ex) {
+                log.info("IntegrationConfig.processMultiplication grouping exception: {}", CollectionUtils.size(group.getMessages()));
+
+                List<Pair<Object, Exception>> payload = StreamEx.of(group.getMessages())
+                    .map(message -> Pair.of(message.getHeaders().getReplyChannel(), ex))
+                    .toList();
+
+                return MessageBuilder.withPayload(payload).build();
+              }
+            })
+        )
+        .log()
+        .split()
+        .log()
+        .handle(Pair.class, (payload, headers) -> {
+          Object result = (payload.getRight() instanceof Throwable) ? payload.getRight() : Optional.ofNullable(payload.getRight());
+
+          return MessageBuilder.withPayload(result)
+              .copyHeaders(headers)
+              .setReplyChannel((MessageChannel) payload.getLeft())
+              .setErrorChannel((MessageChannel) payload.getLeft())
+              .build();
+        })
+        .log()
+        .handle((payload, headers) -> payload)
+        .get();
   }
 }

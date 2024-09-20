@@ -1,5 +1,6 @@
 package com.james.playground.batch;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.integration.annotation.Gateway;
 import org.springframework.integration.annotation.MessagingGateway;
@@ -14,13 +15,19 @@ public interface MathGateway {
   );
 
   @Gateway(requestChannel = "aggregateChannel")
-  CompletableFuture<Integer> multiplyByTwoAggregate(
+  CompletableFuture<Optional<Integer>> multiplyByTwoAggregate(
       @Header("correlationId") int correlationId,
       @Payload Integer number
   );
 
   @Gateway(requestChannel = "sumChannel")
-  CompletableFuture<Integer> sumAggregate(
+  CompletableFuture<Optional<Integer>> sumAggregate(
+      @Header("correlationId") int correlationId,
+      @Payload Integer number
+  );
+
+  @Gateway(requestChannel = "echoChannel")
+  CompletableFuture<Optional<Void>> echoAggregate(
       @Header("correlationId") int correlationId,
       @Payload Integer number
   );
