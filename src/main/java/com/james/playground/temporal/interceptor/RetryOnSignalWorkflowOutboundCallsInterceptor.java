@@ -78,8 +78,8 @@ public class RetryOnSignalWorkflowOutboundCallsInterceptor extends WorkflowOutbo
     this.pendingActivities.add(retryState);
 
     log.info(
-        "Executing activity, name: {}, args: {}, pending activity size: {}",
-        input.getActivityName(), input.getArgs(), this.pendingActivities.size()
+        "Executing activity, name: {}, args: {}, pending activity size: {}, header: {}",
+        input.getActivityName(), input.getArgs(), this.pendingActivities.size(), input.getHeader().getValues()
     );
 
     return retryState.execute();
@@ -103,24 +103,6 @@ public class RetryOnSignalWorkflowOutboundCallsInterceptor extends WorkflowOutbo
       return this.executeWithAsyncRetry();
     }
 
-    boolean isNonRetryable(Throwable ex) {
-      if (ex instanceof ApplicationFailure casted && casted.isNonRetryable()) {
-        return true;
-      }
-
-      if (ex instanceof CanceledFailure || ex instanceof TerminatedFailure) {
-        return true;
-      }
-
-      Throwable rootCause = ExceptionUtils.getRootCause(ex);
-      if (rootCause != null && rootCause != ex && this.isNonRetryable(rootCause)) {
-        return true;
-      }
-
-      Throwable cause = ex.getCause();
-      return cause != null && cause != ex && this.isNonRetryable(cause);
-    }
-
     // Executes activity with retry based on signaled action asynchronously
     private ActivityOutput<R> executeWithAsyncRetry() {
       this.action = null;
@@ -130,11 +112,6 @@ public class RetryOnSignalWorkflowOutboundCallsInterceptor extends WorkflowOutbo
           .handle(
               (r, failure) -> {
                 if (failure == null) {
-                  RetryOnSignalWorkflowOutboundCallsInterceptor.super.upsertTypedSearchAttributes(
-                      SearchAttributeKey.forBoolean("CustomManualRetryRequired")
-                          .valueSet(true)
-                  );
-
                   RetryOnSignalWorkflowOutboundCallsInterceptor.this.pendingActivities.remove(this);
                   this.asyncResult.complete(r);
                   return null;
@@ -145,6 +122,11 @@ public class RetryOnSignalWorkflowOutboundCallsInterceptor extends WorkflowOutbo
                   this.asyncResult.completeExceptionally(failure);
                   return null;
                 }
+
+                RetryOnSignalWorkflowOutboundCallsInterceptor.super.upsertTypedSearchAttributes(
+                    SearchAttributeKey.forBoolean("CustomManualRetryRequired")
+                        .valueSet(true)
+                );
 
                 Async.procedure(
                     RetryOnSignalWorkflowOutboundCallsInterceptor.this.accountActivity::warn,
@@ -180,6 +162,24 @@ public class RetryOnSignalWorkflowOutboundCallsInterceptor extends WorkflowOutbo
               });
 
       return new ActivityOutput<>(result.getActivityId(), this.asyncResult);
+    }
+
+    boolean isNonRetryable(Throwable ex) {
+      if (ex instanceof ApplicationFailure casted && casted.isNonRetryable()) {
+        return true;
+      }
+
+      if (ex instanceof CanceledFailure || ex instanceof TerminatedFailure) {
+        return true;
+      }
+
+      Throwable rootCause = ExceptionUtils.getRootCause(ex);
+      if (rootCause != null && rootCause != ex && this.isNonRetryable(rootCause)) {
+        return true;
+      }
+
+      Throwable cause = ex.getCause();
+      return cause != null && cause != ex && this.isNonRetryable(cause);
     }
 
     public void retry() {
