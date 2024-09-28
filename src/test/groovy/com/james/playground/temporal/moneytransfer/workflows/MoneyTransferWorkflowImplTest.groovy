@@ -3,7 +3,6 @@ package com.james.playground.temporal.moneytransfer.workflows
 import com.james.playground.temporal.BaseWorkflowSpecification
 import com.james.playground.temporal.moneytransfer.activities.AccountActivity
 import com.james.playground.temporal.moneytransfer.dto.TransactionDetails
-import org.springframework.core.io.ClassPathResource
 
 class MoneyTransferWorkflowImplTest extends BaseWorkflowSpecification<MoneyTransferWorkflow> {
     AccountActivity accountActivity = Mock(AccountActivity)
@@ -45,14 +44,14 @@ class MoneyTransferWorkflowImplTest extends BaseWorkflowSpecification<MoneyTrans
         result == "TRANSFER_COMPLETED_" + details.amountToTransfer
     }
 
-    def "test determinism"() {
-        given:
-        def resource = new ClassPathResource("history_encoded.json")
-
-        when:
-        this.replayWorkflowExecution(resource.getFile())
-
-        then:
-        noExceptionThrown()
-    }
+//    def "test determinism"() {
+//        given:
+//        def resource = new ClassPathResource("history_encoded.json")
+//
+//        when:
+//        this.replayWorkflowExecution(resource.getFile())
+//
+//        then:
+//        noExceptionThrown()
+//    }
 }

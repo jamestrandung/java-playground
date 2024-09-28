@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper.Builder;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.james.playground.temporal.dsl.language.core.WorkflowNode;
 import com.james.playground.temporal.dsl.workflows.marketing.MarketingWorkflow;
+import com.james.playground.temporal.interceptor.RetryOnSignalWorkerInterceptor;
 import io.temporal.client.WorkflowClientOptions;
 import io.temporal.common.converter.DefaultDataConverter;
 import io.temporal.common.converter.JacksonJsonPayloadConverter;
@@ -88,6 +89,8 @@ public class TemporalConfigs {
       @Nonnull
       @Override
       public WorkerFactoryOptions.Builder customize(@Nonnull WorkerFactoryOptions.Builder optionsBuilder) {
+        optionsBuilder.setWorkerInterceptors(new RetryOnSignalWorkerInterceptor());
+
         return optionsBuilder;
       }
     };

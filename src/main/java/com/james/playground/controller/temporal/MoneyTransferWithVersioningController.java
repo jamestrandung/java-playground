@@ -1,5 +1,6 @@
 package com.james.playground.controller.temporal;
 
+import com.james.playground.temporal.interceptor.RetryOnSignalInterceptorListener;
 import com.james.playground.temporal.moneytransfer.dto.TransactionDetails;
 import com.james.playground.temporal.moneytransfer.workflows.MoneyTransferWorkflow;
 import io.temporal.api.common.v1.WorkflowExecution;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -69,5 +71,16 @@ public class MoneyTransferWithVersioningController {
     );
 
     log.info("Money transfer completed with result: {}", moneyTransferWorkflow.transfer(details));
+  }
+
+  @PostMapping("/transfer/retry")
+  public void retry(@RequestParam boolean shouldRetry) {
+    var stub = this.workflowClient.newWorkflowStub(RetryOnSignalInterceptorListener.class, MoneyTransferWorkflow.WORKFLOW_ID);
+    if (shouldRetry) {
+      stub.retry();
+      return;
+    }
+
+    stub.fail();
   }
 }

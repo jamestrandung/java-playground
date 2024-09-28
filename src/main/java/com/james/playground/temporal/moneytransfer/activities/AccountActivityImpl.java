@@ -2,7 +2,6 @@ package com.james.playground.temporal.moneytransfer.activities;
 
 import com.james.playground.service.DummyService;
 import io.temporal.activity.Activity;
-import io.temporal.failure.ApplicationFailure;
 import io.temporal.spring.boot.ActivityImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,7 @@ public class AccountActivityImpl implements AccountActivity {
 
   @Override
   public void withdraw(String referenceId, String accountId, int amount, int delayInSeconds) {
-    dummyService.say("I'm withdrawing money");
+    this.dummyService.say("I'm withdrawing money");
 
     if (delayInSeconds > 0) {
       log.info("Delaying withdrawal of {} from account {}, reference ID: {} ", amount, accountId, referenceId);
@@ -58,6 +57,13 @@ public class AccountActivityImpl implements AccountActivity {
     log.error("Failed to deposit v2 {} to account {}, reference ID: {}", amount, accountId, referenceId);
 
     // Use ApplicationFailure to indicate non-retryable failure and overwrite retry policy from Workflow
-    throw ApplicationFailure.newNonRetryableFailure("Simulated Activity error during deposit of funds", "DEPOSIT_FAILURE");
+    throw Activity.wrap(new RuntimeException("Simulated Activity error during deposit of funds"));
+    //    throw ApplicationFailure.newNonRetryableFailure("Simulated Activity error during deposit of funds", "DEPOSIT_FAILURE");
+  }
+
+  @Override
+  public void warn(String errMessage) {
+    //    throw Activity.wrap(new RuntimeException("Simulated Activity error during warning"));
+    log.warn("Encountered error: {}", errMessage);
   }
 }

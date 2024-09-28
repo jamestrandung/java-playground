@@ -10,6 +10,8 @@ import io.temporal.workflow.Async;
 import io.temporal.workflow.Promise;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 
@@ -21,7 +23,7 @@ public class MoneyTransferWorkflowImpl implements MoneyTransferWorkflow {
   private static final Logger LOGGER = Workflow.getLogger(MoneyTransferWorkflowImpl.class);
 
   private static final RetryOptions RETRY_OPTIONS = RetryOptions.newBuilder()
-      .setInitialInterval(Duration.ofSeconds(1)) // Wait duration before first retry
+      .setInitialInterval(Duration.ofSeconds(3)) // Wait duration before first retry
       .setMaximumInterval(Duration.ofSeconds(60)) // Maximum wait duration between retries
       .setMaximumAttempts(3) // Maximum number of retry attempts
       .setBackoffCoefficient(1)
@@ -43,7 +45,7 @@ public class MoneyTransferWorkflowImpl implements MoneyTransferWorkflow {
       throw new RuntimeException("Simulated immediate failure");
     }
 
-    VersionResolver versions = VersionResolver.from(Map.of(ChangeId.CHANGE_DEPOSIT_METHOD, 1));
+    VersionResolver versions = VersionResolver.from(Map.of(ChangeId.CHANGE_DEPOSIT_METHOD, 2));
 
     try {
       Promise<Void> promise = Async.procedure(
@@ -65,7 +67,7 @@ public class MoneyTransferWorkflowImpl implements MoneyTransferWorkflow {
       // Non-deterministic errors will keep the workflow in the
       // Running state. It's possible to redeploy the Worker with
       // a fix and resume the workflow automatically.
-      if (versions.get(ChangeId.CHANGE_DEPOSIT_METHOD) == 1) {
+      if (versions.get(ChangeId.CHANGE_DEPOSIT_METHOD) == 2) {
         this.accountActivity.depositV2(
             details.getReferenceId(),
             details.getDestinationAccountId(),
@@ -124,5 +126,20 @@ public class MoneyTransferWorkflowImpl implements MoneyTransferWorkflow {
       LOGGER.error("Compensation failed, error: {}", ex.getMessage());
       throw ex;
     }
+  }
+
+  void warn() {
+    List<Promise<Void>> futures = new ArrayList<>();
+
+    for (int i = 0; i < 20; i++) {
+      Promise<Void> future = Async.procedure(
+          this.accountActivity::warn,
+          "SOMETHING " + i
+      );
+
+      futures.add(future);
+    }
+
+    Promise.allOf(futures).get();
   }
 }
