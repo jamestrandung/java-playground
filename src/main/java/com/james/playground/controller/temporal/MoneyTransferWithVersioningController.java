@@ -3,8 +3,10 @@ package com.james.playground.controller.temporal;
 import com.james.playground.temporal.interceptor.RetryOnSignalInterceptorListener;
 import com.james.playground.temporal.moneytransfer.dto.TransactionDetails;
 import com.james.playground.temporal.moneytransfer.workflows.MoneyTransferWorkflow;
+import com.james.playground.temporal.utils.ExceptionUtils;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowExecutionAlreadyStarted;
 import io.temporal.client.WorkflowOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,11 +54,20 @@ public class MoneyTransferWithVersioningController {
             .build()
     );
 
-    // Duplicated workflow ID will cause exception
-    WorkflowExecution execution = WorkflowClient.start(moneyTransferWorkflow::transfer, details);
+    try {
+      // Duplicated workflow ID will cause exception
+      WorkflowExecution execution = WorkflowClient.start(moneyTransferWorkflow::transfer, details);
 
-    log.info("Money transfer started with run ID: {}", execution.getRunId());
+      log.info("Money transfer started with run ID: {}", execution.getRunId());
 
+    } catch (WorkflowExecutionAlreadyStarted ex) {
+      log.info("Money transfer already started with run ID: {}", ex.getExecution().getRunId());
+
+    } catch (Exception ex) {
+      log.info(ExceptionUtils.getStackTrace(ex));
+    }
+
+    // This will not cause exception if the workflow ID is duplicated
     log.info("Money transfer completed with result: {}", moneyTransferWorkflow.transfer(details));
   }
 
@@ -70,6 +81,7 @@ public class MoneyTransferWithVersioningController {
             .build()
     );
 
+    // This will not cause exception if the workflow ID is duplicated
     log.info("Money transfer completed with result: {}", moneyTransferWorkflow.transfer(details));
   }
 
