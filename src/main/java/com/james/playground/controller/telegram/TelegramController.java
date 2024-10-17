@@ -1,6 +1,6 @@
 package com.james.playground.controller.telegram;
 
-import com.james.playground.telegram.bot.MyBot;
+import com.james.playground.telegram.bot.MyLongPollingBot;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,11 +14,11 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @RequestMapping("/telegram")
 public class TelegramController {
   @Autowired
-  MyBot myBot;
+  MyLongPollingBot myLongPollingBot;
 
   @PostMapping
   public void onWebhookUpdate(@RequestBody Update update) {
     log.info("Received webhook update: {}", update);
-    this.myBot.onUpdateReceived(update);
+    this.myLongPollingBot.onUpdateReceived(update);
   }
 }

@@ -21,14 +21,11 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 
 @Slf4j
 @Component
-public class MyBot extends AbilityBot {
+public class MyLongPollingBot extends AbilityBot {
   private static final String BOT_USERNAME = "okx_faq_bot";
   private static final String BOT_TOKEN = "7635664233:AAFceN-ZD8Lx4Mm1LkF8iEVzwhD5A7IwLT0";
 
-  //  private static final String BOT_USERNAME = "AnotherLearningBot";
-  //  private static final String BOT_TOKEN = "7595376834:AAHaszid97hejVBIOgnQKb7feOd4nAy62MQ";
-
-  public MyBot() {
+  public MyLongPollingBot() {
     super(BOT_TOKEN, BOT_USERNAME);
     log.info("MyBot is starting...");
   }
