@@ -55,6 +55,26 @@
         <groupId>org.apache.maven.plugins</groupId>
         <version>3.2.5</version>
       </plugin>
+      <plugin>
+        <artifactId>kotlin-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <configuration>
+              <sourceDirs>
+                <source>src/main/java</source>
+                <source>target/generated-sources/annotations</source>
+              </sourceDirs>
+            </configuration>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <id>compile</id>
+            <phase>process-sources</phase>
+          </execution>
+        </executions>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <version>2.0.0</version>
+      </plugin>
     </plugins>
   </build>
 
@@ -120,6 +140,22 @@
       <groupId>net.bytebuddy</groupId>
       <version>1.14.9</version>
     </dependency>
+    <dependency>
+      <artifactId>telegrambots-abilities</artifactId>
+      <groupId>org.telegram</groupId>
+      <version>6.9.7.1</version>
+    </dependency>
+    <dependency>
+      <artifactId>telegrambots-spring-boot-starter</artifactId>
+      <groupId>org.telegram</groupId>
+      <version>6.9.7.1</version>
+    </dependency>
+    <dependency>
+      <artifactId>kotlin-stdlib</artifactId>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <version>2.0.0</version>
+    </dependency>
+
 
     <!-- TEST DEPENDENCIES - START -->
     <dependency>

@@ -1,4 +1,4 @@
-package com.james.playground.parsing;
+package com.james.playground.miscellaneous;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.james.playground.temporal.dsl.language.nodes.delay.DelayNode;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Delegate;
 import lombok.experimental.SuperBuilder;
 
-public class Test {
+public class Parsing {
   public static void main(String[] args) {
     //    String dateTime = "2024-06-19T20:49:00";
     //    System.out.println(ZonedDateTime.parse(dateTime, DateTimeFormatter.ISO_OFFSET_DATE_TIME));

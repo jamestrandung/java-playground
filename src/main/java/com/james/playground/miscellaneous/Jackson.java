@@ -1,16 +1,17 @@
-package com.james.playground.utils;
+package com.james.playground.miscellaneous;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.james.playground.temporal.dsl.language.core.WorkflowNode;
 import com.james.playground.temporal.dsl.language.nodes.TransitNode;
 import com.james.playground.temporal.dsl.language.nodes.TransitNode.TransitCategory;
+import com.james.playground.utils.FormatUtils;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import one.util.streamex.EntryStream;
 import one.util.streamex.StreamEx;
 
-public class Test {
+public class Jackson {
   private static final String BLANK_WORKFLOW_STRUCTURE = FormatUtils.toJsonString(
       EntryStream.of(
           TransitNode.START_ID,

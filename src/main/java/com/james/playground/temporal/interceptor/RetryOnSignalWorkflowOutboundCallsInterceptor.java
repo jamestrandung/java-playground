@@ -37,8 +37,8 @@ public class RetryOnSignalWorkflowOutboundCallsInterceptor extends WorkflowOutbo
       .setRetryOptions(RETRY_OPTIONS)
       .build();
   /**
-   * For the example brevity the interceptor fails or retries all activities that are waiting for an action. The production version
-   * might implement retry and failure of specific activities by their type.
+   * For the example brevity the interceptor fails or retries all activities that are waiting for an action. The production version might implement
+   * retry and failure of specific activities by their type.
    */
   private final Set<ActivityRetryState<?>> pendingActivities = new HashSet<>();
   private final AccountActivity accountActivity = Workflow.newActivityStub(AccountActivity.class, ACTIVITY_OPTIONS, null);
@@ -127,6 +127,8 @@ public class RetryOnSignalWorkflowOutboundCallsInterceptor extends WorkflowOutbo
                     SearchAttributeKey.forBoolean("CustomManualRetryRequired")
                         .valueSet(true)
                 );
+
+                log.info("Handling error for workflow: " + Workflow.getInfo().getWorkflowType());
 
                 Async.procedure(
                     RetryOnSignalWorkflowOutboundCallsInterceptor.this.accountActivity::warn,
