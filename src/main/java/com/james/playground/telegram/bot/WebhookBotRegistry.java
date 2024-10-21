@@ -20,7 +20,7 @@ import org.telegram.telegrambots.meta.generics.WebhookBot;
 public class WebhookBotRegistry<B extends WebhookBot> {
   // bot path -> SecuredWebhookBotReference
   private final Cache<String, SecuredWebhookBotReference> redisReferenceCache = Caffeine.newBuilder()
-      .expireAfterWrite(Duration.ofSeconds(120))
+      .expireAfterWrite(Duration.ofSeconds(300))
       .build();
   // bot ID -> WebhookBot
   private final Cache<String, B> localBotCache = Caffeine.newBuilder()
@@ -41,7 +41,7 @@ public class WebhookBotRegistry<B extends WebhookBot> {
 
     try {
       SetWebhook request = SetWebhook.builder()
-          .url("url")
+          .url("https://a853-203-127-162-66.ngrok-free.app/telegram")
           .maxConnections(100)
           .dropPendingUpdates(false)
           .secretToken(reference.getSecretToken())
@@ -79,7 +79,7 @@ public class WebhookBotRegistry<B extends WebhookBot> {
   public B findBot(String botPath, String secretToken) {
     SecuredWebhookBotReference reference = this.redisReferenceCache.get(botPath, path -> this.findBotReference(botPath, secretToken));
 
-    return this.localBotCache.get(reference.botUsername, this::buildBot);
+    return this.localBotCache.get(reference.botUsername, botUsername -> this.buildBot(botUsername, botPath));
   }
 
   SecuredWebhookBotReference findBotReference(String botPath, String secretToken) {
@@ -96,8 +96,8 @@ public class WebhookBotRegistry<B extends WebhookBot> {
     return reference;
   }
 
-  B buildBot(String botUsername) {
-    B bot = this.factory.createBot(botUsername);
+  B buildBot(String botUsername, String botPath) {
+    B bot = this.factory.createBot(botUsername, botPath);
 
     if (bot == null) {
       throw new RuntimeException("Bot not found");

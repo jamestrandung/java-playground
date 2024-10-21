@@ -9,7 +9,7 @@ import org.telegram.telegrambots.meta.generics.WebhookBot;
 public interface WebhookBotFactory<B extends WebhookBot> {
   SecuredWebhookBotReference findBotReference(String botPath);
 
-  B createBot(String botId);
+  B createBot(String botUsername, String botPath);
 
   @Getter
   @Builder

@@ -1,11 +1,11 @@
-package com.james.playground.telegram.bot;
+package com.james.playground.telegram.bot.webhook;
 
 import java.util.List;
 import java.util.function.BiConsumer;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.telegram.abilitybots.api.bot.AbilityBot;
+import org.telegram.abilitybots.api.bot.AbilityWebhookBot;
 import org.telegram.abilitybots.api.bot.BaseAbilityBot;
+import org.telegram.abilitybots.api.db.DBContext;
 import org.telegram.abilitybots.api.objects.Ability;
 import org.telegram.abilitybots.api.objects.Flag;
 import org.telegram.abilitybots.api.objects.Locality;
@@ -20,14 +20,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRem
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 @Slf4j
-@Component
-public class MyLongPollingBot extends AbilityBot {
-  private static final String BOT_USERNAME = "okx_faq_bot";
-  private static final String BOT_TOKEN = "7635664233:AAFceN-ZD8Lx4Mm1LkF8iEVzwhD5A7IwLT0";
+public class MyWebhookBot extends AbilityWebhookBot {
+  public static final String BOT_USERNAME = "AnotherLearningBot";
+  public static final String BOT_TOKEN = "7595376834:AAHaszid97hejVBIOgnQKb7feOd4nAy62MQ";
 
-  public MyLongPollingBot() {
-    super(BOT_TOKEN, BOT_USERNAME);
-    log.info("MyBot is starting...");
+  public MyWebhookBot(String botPath, DBContext dbContext) {
+    super(BOT_TOKEN, BOT_USERNAME, botPath, dbContext);
   }
 
   @Override
@@ -68,7 +66,7 @@ public class MyLongPollingBot extends AbilityBot {
       log.info("Handling update: {}", update);
 
       String text = update.getMessage().getText();
-      
+
       if (text.equals("/start")) {
         KeyboardRow row = new KeyboardRow();
         row.add("sing");
