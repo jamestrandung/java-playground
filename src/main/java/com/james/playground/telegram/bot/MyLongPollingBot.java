@@ -68,7 +68,7 @@ public class MyLongPollingBot extends AbilityBot {
       log.info("Handling update: {}", update);
 
       String text = update.getMessage().getText();
-
+      
       if (text.equals("/start")) {
         KeyboardRow row = new KeyboardRow();
         row.add("sing");
