@@ -17,8 +17,9 @@ public interface WebhookBotFactory<B extends WebhookBot> {
   @AllArgsConstructor
   class SecuredWebhookBotReference {
     Long id;
-    String botPath;
     String botUsername;
+    String botType;
+    String botPath;
     String secretToken;
   }
 }

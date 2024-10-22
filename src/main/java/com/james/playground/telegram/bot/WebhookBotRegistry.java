@@ -2,6 +2,7 @@ package com.james.playground.telegram.bot;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.james.playground.telegram.bot.TelegramUtils.BotConfigs;
 import com.james.playground.telegram.bot.WebhookBotFactory.SecuredWebhookBotReference;
 import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
@@ -34,12 +35,14 @@ public class WebhookBotRegistry<B extends WebhookBot> {
     this.factory = factory;
   }
 
-  public void registerWebhook(SecuredWebhookBotReference reference, B bot) {
-    if (!this.validateBotUsernameAndToken(bot)) {
-      throw new RuntimeException("Bot token and username can't be empty");
-    }
-
+  public void registerWebhook(SecuredWebhookBotReference reference, String botToken) {
     try {
+      BotConfigs configs = BotConfigs.builder()
+          .botToken(botToken)
+          .botPath(reference.getBotPath())
+          .secretToken(reference.getSecretToken())
+          .build();
+
       SetWebhook request = SetWebhook.builder()
           .url("https://a853-203-127-162-66.ngrok-free.app/telegram")
           .maxConnections(100)
@@ -47,9 +50,9 @@ public class WebhookBotRegistry<B extends WebhookBot> {
           .secretToken(reference.getSecretToken())
           .build();
 
-      bot.setWebhook(request);
+      TelegramUtils.setWebhook(configs, request);
 
-      this.redisReferenceCache.put(bot.getBotPath(), reference);
+      this.redisReferenceCache.put(reference.getBotPath(), reference);
 
     } catch (Exception ex) {
       throw new RuntimeException(ex);

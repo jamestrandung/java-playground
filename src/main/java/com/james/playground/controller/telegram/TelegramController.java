@@ -44,8 +44,8 @@ public class TelegramController {
     this.myWebhookBotFactory.refresh(botPath, secretToken);
 
     SecuredWebhookBotReference reference = this.myWebhookBotFactory.findBotReference(botPath);
-    MyWebhookBot               bot       = this.myWebhookBotFactory.createBot("botId", reference.getBotPath());
+    MyWebhookBot bot = this.myWebhookBotFactory.createBot("botId", reference.getBotPath());
 
-    this.myWebhookBotRegistry.registerWebhook(reference, bot);
+    this.myWebhookBotRegistry.registerWebhook(reference, bot.getBotToken());
   }
 }
