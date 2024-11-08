@@ -2,13 +2,14 @@ package com.james.playground.telegram.bot;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.james.playground.utils.FormatUtils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -18,10 +19,12 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.telegram.telegrambots.meta.api.methods.updates.DeleteWebhook;
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -31,6 +34,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TelegramUtils {
   private static final String SET_WEBHOOK_API_PATH = "setWebhook";
+  private static final String DELETE_WEBHOOK_API_PATH = "deleteWebhook";
   private static final ContentType TEXT_PLAIN_CONTENT_TYPE = ContentType.create("text/plain", StandardCharsets.UTF_8);
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -109,15 +113,52 @@ public class TelegramUtils {
     return httpClientBuilder.build();
   }
 
-  @Data
+  public static void clearWebhook(BotConfigs configs) {
+    try (CloseableHttpClient httpClient = getCloseableHttpClient()) {
+      DeleteWebhook request = new DeleteWebhook(true);
+      HttpPost httpPost = buildClearWebhookRequest(configs, request);
+
+      try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+        String responseContent = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+
+        Boolean result = request.deserializeResponse(responseContent);
+        if (!result) {
+          throw new TelegramApiRequestException("Error setting webhook:" + responseContent);
+        }
+      }
+
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+
+    }
+  }
+
+  static HttpPost buildClearWebhookRequest(BotConfigs configs, DeleteWebhook request) {
+    RequestConfig requestConfig =
+        RequestConfig.custom()
+            .setSocketTimeout(75000)
+            .setConnectTimeout(75000)
+            .setConnectionRequestTimeout(75000)
+            .build();
+
+    HttpPost httpPost = new HttpPost(configs.getRequestUrl(DELETE_WEBHOOK_API_PATH));
+    httpPost.setConfig(requestConfig);
+    httpPost.addHeader("charset", StandardCharsets.UTF_8.name());
+    httpPost.setEntity(
+        new StringEntity(FormatUtils.toJsonString(request), ContentType.APPLICATION_JSON));
+
+    return httpPost;
+  }
+
+  @Getter
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
   public static class BotConfigs {
     private static final String BASE_URL = "https://api.telegram.org/bot";
+    private String botUsername;
     private String botToken;
     private String botPath;
-    private String secretToken;
 
     public String getRequestUrl(String apiPath) {
       return BASE_URL + this.botToken + "/" + apiPath;

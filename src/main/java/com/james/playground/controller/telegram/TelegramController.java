@@ -1,5 +1,7 @@
 package com.james.playground.controller.telegram;
 
+import com.james.playground.telegram.bot.TelegramUtils;
+import com.james.playground.telegram.bot.TelegramUtils.BotConfigs;
 import com.james.playground.telegram.bot.WebhookBotFactory.SecuredWebhookBotReference;
 import com.james.playground.telegram.bot.WebhookBotRegistry;
 import com.james.playground.telegram.bot.webhook.MyWebhookBot;
@@ -47,5 +49,19 @@ public class TelegramController {
     MyWebhookBot bot = this.myWebhookBotFactory.createBot("botId", reference.getBotPath());
 
     this.myWebhookBotRegistry.registerWebhook(reference, bot.getBotToken());
+  }
+
+  @PostMapping("/webhook/delete")
+  public void clearWebhook(
+      @RequestParam String botPath
+  ) {
+
+    SecuredWebhookBotReference reference = this.myWebhookBotFactory.findBotReference(botPath);
+    MyWebhookBot bot = this.myWebhookBotFactory.createBot("botId", reference.getBotPath());
+
+    TelegramUtils.clearWebhook(BotConfigs.builder()
+                                   .botToken(bot.getBotToken())
+                                   .botPath(reference.getBotPath())
+                                   .build());
   }
 }
