@@ -46,21 +46,18 @@ public class TelegramController {
     this.myWebhookBotFactory.refresh(botPath, secretToken);
 
     SecuredWebhookBotReference reference = this.myWebhookBotFactory.findBotReference(botPath);
-    MyWebhookBot bot = this.myWebhookBotFactory.createBot("botId", reference.getBotPath());
-
-    this.myWebhookBotRegistry.registerWebhook(reference, bot.getBotToken());
+    
+    this.myWebhookBotRegistry.registerWebhook(reference, MyWebhookBot.BOT_TOKEN);
   }
 
   @PostMapping("/webhook/delete")
   public void clearWebhook(
       @RequestParam String botPath
   ) {
-
     SecuredWebhookBotReference reference = this.myWebhookBotFactory.findBotReference(botPath);
-    MyWebhookBot bot = this.myWebhookBotFactory.createBot("botId", reference.getBotPath());
 
     TelegramUtils.clearWebhook(BotConfigs.builder()
-                                   .botToken(bot.getBotToken())
+                                   .botToken(MyWebhookBot.BOT_TOKEN)
                                    .botPath(reference.getBotPath())
                                    .build());
   }

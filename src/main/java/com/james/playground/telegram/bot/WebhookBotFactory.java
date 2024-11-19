@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.telegram.telegrambots.meta.generics.WebhookBot;
+import org.telegram.telegrambots.abilitybots.api.bot.AbilityWebhookBot;
 
-public interface WebhookBotFactory<B extends WebhookBot> {
+public interface WebhookBotFactory<B extends AbilityWebhookBot> {
   SecuredWebhookBotReference findBotReference(String botPath);
 
   B createBot(String botUsername, String botPath);

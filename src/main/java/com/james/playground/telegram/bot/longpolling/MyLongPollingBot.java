@@ -4,14 +4,17 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.telegram.abilitybots.api.bot.AbilityBot;
-import org.telegram.abilitybots.api.bot.BaseAbilityBot;
-import org.telegram.abilitybots.api.objects.Ability;
-import org.telegram.abilitybots.api.objects.Flag;
-import org.telegram.abilitybots.api.objects.Locality;
-import org.telegram.abilitybots.api.objects.Privacy;
-import org.telegram.abilitybots.api.objects.Reply;
-import org.telegram.abilitybots.api.util.AbilityUtils;
+import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
+import org.telegram.telegrambots.abilitybots.api.bot.BaseAbilityBot;
+import org.telegram.telegrambots.abilitybots.api.objects.Ability;
+import org.telegram.telegrambots.abilitybots.api.objects.Flag;
+import org.telegram.telegrambots.abilitybots.api.objects.Locality;
+import org.telegram.telegrambots.abilitybots.api.objects.Privacy;
+import org.telegram.telegrambots.abilitybots.api.objects.Reply;
+import org.telegram.telegrambots.abilitybots.api.util.AbilityUtils;
+import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
+import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
+import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
@@ -21,13 +24,14 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 
 @Slf4j
 @Component
-public class MyLongPollingBot extends AbilityBot {
+public class MyLongPollingBot extends AbilityBot implements SpringLongPollingBot {
   private static final String BOT_USERNAME = "okx_faq_bot";
   private static final String BOT_TOKEN = "7635664233:AAFceN-ZD8Lx4Mm1LkF8iEVzwhD5A7IwLT0";
 
   public MyLongPollingBot() {
-    super(BOT_TOKEN, BOT_USERNAME);
+    super(new OkHttpTelegramClient(BOT_TOKEN), BOT_USERNAME);
     log.info("MyBot is starting...");
+    this.onRegister();
   }
 
   @Override
@@ -97,11 +101,22 @@ public class MyLongPollingBot extends AbilityBot {
       String text,
       ReplyKeyboard keyboard
   ) {
-    SendMessage sendMessage = new SendMessage();
-    sendMessage.setChatId(chatId);
-    sendMessage.setText(text);
-    sendMessage.setReplyMarkup(keyboard);
+    SendMessage sendMessage = SendMessage.builder()
+        .chatId(chatId)
+        .text(text)
+        .replyMarkup(keyboard)
+        .build();
 
     this.silent.execute(sendMessage);
+  }
+
+  @Override
+  public String getBotToken() {
+    return BOT_TOKEN;
+  }
+
+  @Override
+  public LongPollingUpdateConsumer getUpdatesConsumer() {
+    return this;
   }
 }

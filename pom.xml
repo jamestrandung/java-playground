@@ -143,12 +143,27 @@
     <dependency>
       <artifactId>telegrambots-abilities</artifactId>
       <groupId>org.telegram</groupId>
-      <version>6.9.7.1</version>
+      <version>7.10.0</version>
     </dependency>
     <dependency>
-      <artifactId>telegrambots-spring-boot-starter</artifactId>
+      <artifactId>telegrambots-springboot-longpolling-starter</artifactId>
       <groupId>org.telegram</groupId>
-      <version>6.9.7.1</version>
+      <version>7.10.0</version>
+    </dependency>
+    <dependency>
+      <artifactId>telegrambots-longpolling</artifactId>
+      <groupId>org.telegram</groupId>
+      <version>7.10.0</version>
+    </dependency>
+    <dependency>
+      <artifactId>telegrambots-webhook</artifactId>
+      <groupId>org.telegram</groupId>
+      <version>7.10.0</version>
+    </dependency>
+    <dependency>
+      <artifactId>telegrambots-client</artifactId>
+      <groupId>org.telegram</groupId>
+      <version>7.10.0</version>
     </dependency>
     <dependency>
       <artifactId>kotlin-stdlib</artifactId>
@@ -159,6 +174,21 @@
       <artifactId>caffeine</artifactId>
       <groupId>com.github.ben-manes.caffeine</groupId>
       <version>3.1.8</version>
+    </dependency>
+    <dependency>
+      <artifactId>httpclient</artifactId>
+      <groupId>org.apache.httpcomponents</groupId>
+      <version>4.5.14</version>
+    </dependency>
+    <dependency>
+      <artifactId>httpmime</artifactId>
+      <groupId>org.apache.httpcomponents</groupId>
+      <version>4.5.14</version>
+    </dependency>
+    <dependency>
+      <artifactId>okhttp</artifactId>
+      <groupId>com.squareup.okhttp3</groupId>
+      <version>4.12.0</version>
     </dependency>
 
 

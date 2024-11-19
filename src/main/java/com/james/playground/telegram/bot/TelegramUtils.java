@@ -42,7 +42,8 @@ public class TelegramUtils {
     request.validate();
 
     try (CloseableHttpClient httpClient = getCloseableHttpClient()) {
-      RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(75000).setConnectTimeout(75000).setConnectionRequestTimeout(75000)
+      RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(75000).setConnectTimeout(75000)
+          .setConnectionRequestTimeout(75000)
           .build();
 
       HttpPost httpPost = new HttpPost(configs.getRequestUrl(SET_WEBHOOK_API_PATH));
@@ -115,8 +116,8 @@ public class TelegramUtils {
 
   public static void clearWebhook(BotConfigs configs) {
     try (CloseableHttpClient httpClient = getCloseableHttpClient()) {
-      DeleteWebhook request = new DeleteWebhook(true);
-      HttpPost httpPost = buildClearWebhookRequest(configs, request);
+      DeleteWebhook request  = new DeleteWebhook(true);
+      HttpPost      httpPost = buildClearWebhookRequest(configs, request);
 
       try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
         String responseContent = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);

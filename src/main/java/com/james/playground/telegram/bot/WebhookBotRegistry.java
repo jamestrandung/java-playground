@@ -7,18 +7,18 @@ import com.james.playground.telegram.bot.WebhookBotFactory.SecuredWebhookBotRefe
 import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.abilitybots.api.bot.AbilityWebhookBot;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiValidationException;
-import org.telegram.telegrambots.meta.generics.TelegramBot;
-import org.telegram.telegrambots.meta.generics.WebhookBot;
+import org.telegram.telegrambots.webhook.TelegramWebhookBot;
 
 /**
  * Combination of TelegramBotsApi and ServerlessWebhook
  */
 @Slf4j
-public class WebhookBotRegistry<B extends WebhookBot> {
+public class WebhookBotRegistry<B extends AbilityWebhookBot> {
   // bot path -> SecuredWebhookBotReference
   private final Cache<String, SecuredWebhookBotReference> redisReferenceCache = Caffeine.newBuilder()
       .expireAfterWrite(Duration.ofSeconds(300))
@@ -40,11 +40,10 @@ public class WebhookBotRegistry<B extends WebhookBot> {
       BotConfigs configs = BotConfigs.builder()
           .botToken(botToken)
           .botPath(reference.getBotPath())
-          .secretToken(reference.getSecretToken())
           .build();
 
       SetWebhook request = SetWebhook.builder()
-          .url("https://a853-203-127-162-66.ngrok-free.app/telegram")
+          .url("https://43ec-203-127-162-66.ngrok-free.app/telegram")
           .maxConnections(100)
           .dropPendingUpdates(false)
           .secretToken(reference.getSecretToken())
@@ -59,15 +58,11 @@ public class WebhookBotRegistry<B extends WebhookBot> {
     }
   }
 
-  private boolean validateBotUsernameAndToken(TelegramBot telegramBot) {
-    return StringUtils.isNotEmpty(telegramBot.getBotToken()) && StringUtils.isNotEmpty(telegramBot.getBotUsername());
-  }
-
   public BotApiMethod<?> onWebhookUpdateReceived(String botPath, String secretToken, Update update) {
-    WebhookBot bot = this.findBot(botPath, secretToken);
+    TelegramWebhookBot bot = this.findBot(botPath, secretToken);
 
     try {
-      BotApiMethod<?> response = bot.onWebhookUpdateReceived(update);
+      BotApiMethod<?> response = bot.consumeUpdate(update);
       if (response != null) {
         response.validate();
       }

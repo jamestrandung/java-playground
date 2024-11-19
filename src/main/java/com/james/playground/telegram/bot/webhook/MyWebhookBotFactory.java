@@ -4,8 +4,8 @@ import com.james.playground.telegram.bot.WebhookBotFactory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Component;
-import org.telegram.abilitybots.api.db.DBContext;
-import org.telegram.abilitybots.api.db.MapDBContext;
+import org.telegram.telegrambots.abilitybots.api.db.DBContext;
+import org.telegram.telegrambots.abilitybots.api.db.MapDBContext;
 
 @Component
 public class MyWebhookBotFactory implements WebhookBotFactory<MyWebhookBot> {

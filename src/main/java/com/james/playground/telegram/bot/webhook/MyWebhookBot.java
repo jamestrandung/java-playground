@@ -3,21 +3,24 @@ package com.james.playground.telegram.bot.webhook;
 import java.util.List;
 import java.util.function.BiConsumer;
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.abilitybots.api.bot.AbilityWebhookBot;
-import org.telegram.abilitybots.api.bot.BaseAbilityBot;
-import org.telegram.abilitybots.api.db.DBContext;
-import org.telegram.abilitybots.api.objects.Ability;
-import org.telegram.abilitybots.api.objects.Flag;
-import org.telegram.abilitybots.api.objects.Locality;
-import org.telegram.abilitybots.api.objects.Privacy;
-import org.telegram.abilitybots.api.objects.Reply;
-import org.telegram.abilitybots.api.util.AbilityUtils;
+import org.telegram.telegrambots.abilitybots.api.bot.AbilityWebhookBot;
+import org.telegram.telegrambots.abilitybots.api.bot.BaseAbilityBot;
+import org.telegram.telegrambots.abilitybots.api.db.DBContext;
+import org.telegram.telegrambots.abilitybots.api.objects.Ability;
+import org.telegram.telegrambots.abilitybots.api.objects.Flag;
+import org.telegram.telegrambots.abilitybots.api.objects.Locality;
+import org.telegram.telegrambots.abilitybots.api.objects.Privacy;
+import org.telegram.telegrambots.abilitybots.api.objects.Reply;
+import org.telegram.telegrambots.abilitybots.api.util.AbilityUtils;
+import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updates.DeleteWebhook;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Slf4j
 public class MyWebhookBot extends AbilityWebhookBot {
@@ -25,7 +28,7 @@ public class MyWebhookBot extends AbilityWebhookBot {
   public static final String BOT_TOKEN = "7595376834:AAHaszid97hejVBIOgnQKb7feOd4nAy62MQ";
 
   public MyWebhookBot(String botPath, DBContext dbContext) {
-    super(BOT_TOKEN, BOT_USERNAME, botPath, dbContext);
+    super(new OkHttpTelegramClient(BOT_TOKEN), BOT_USERNAME, botPath, dbContext);
   }
 
   @Override
@@ -95,11 +98,26 @@ public class MyWebhookBot extends AbilityWebhookBot {
       String text,
       ReplyKeyboard keyboard
   ) {
-    SendMessage sendMessage = new SendMessage();
-    sendMessage.setChatId(chatId);
-    sendMessage.setText(text);
-    sendMessage.setReplyMarkup(keyboard);
+    SendMessage sendMessage = SendMessage.builder()
+        .chatId(chatId)
+        .text(text)
+        .replyMarkup(keyboard)
+        .build();
 
     this.silent.execute(sendMessage);
+  }
+
+  @Override
+  public void runDeleteWebhook() {
+    try {
+      this.telegramClient.execute(new DeleteWebhook());
+    } catch (TelegramApiException e) {
+      log.info("Error deleting webhook");
+    }
+  }
+
+  @Override
+  public void runSetWebhook() {
+
   }
 }
