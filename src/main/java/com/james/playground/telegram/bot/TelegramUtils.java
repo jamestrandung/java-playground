@@ -2,8 +2,10 @@ package com.james.playground.telegram.bot;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.james.playground.telegram.bot.method.TelegramMethodCallback;
+import com.james.playground.temporal.utils.ExceptionUtils;
 import com.james.playground.utils.FormatUtils;
-import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import lombok.AccessLevel;
@@ -12,22 +14,27 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.Headers;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
+import org.telegram.telegrambots.client.TelegramMultipartBuilder;
+import org.telegram.telegrambots.meta.TelegramUrl;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.updates.DeleteWebhook;
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 
 @Slf4j
@@ -37,72 +44,44 @@ public class TelegramUtils {
   private static final String DELETE_WEBHOOK_API_PATH = "deleteWebhook";
   private static final ContentType TEXT_PLAIN_CONTENT_TYPE = ContentType.create("text/plain", StandardCharsets.UTF_8);
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private static final OkHttpClient CLIENT = (new OkHttpClient.Builder()).build();
 
-  public static void setWebhook(BotConfigs configs, SetWebhook request) throws TelegramApiException {
-    request.validate();
+  public static void setWebhook(BotConfigs configs, SetWebhook request) {
+    try {
+      request.validate();
 
-    try (CloseableHttpClient httpClient = getCloseableHttpClient()) {
-      RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(75000).setConnectTimeout(75000)
-          .setConnectionRequestTimeout(75000)
-          .build();
+      HttpUrl url = configs.buildUrl(request.getMethod());
+      MultipartBody body = buildSetWebhookRequestBody(configs, request);
 
-      HttpPost httpPost = new HttpPost(configs.getRequestUrl(SET_WEBHOOK_API_PATH));
-      httpPost.setConfig(requestConfig);
+      Request httpPost = (new Request.Builder()).url(url).post(body).build();
 
-      HttpEntity multipart = buildSetWebhookRequestBody(configs, request);
-      httpPost.setEntity(multipart);
-
-      try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
-        String responseContent = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-
-        Boolean result = request.deserializeResponse(responseContent);
-        if (!result) {
-          throw new TelegramApiRequestException("Error setting webhook:" + responseContent);
-        }
+      Boolean result = sendRequest(request, httpPost).get();
+      if (!Boolean.TRUE.equals(result)) {
+        throw new TelegramApiRequestException("error setting webhook");
       }
 
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
 
     }
   }
 
-  static HttpEntity buildSetWebhookRequestBody(BotConfigs configs, SetWebhook request) throws JsonProcessingException {
-    MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+  static MultipartBody buildSetWebhookRequestBody(BotConfigs configs, SetWebhook request) throws JsonProcessingException {
+    try {
+      return new TelegramMultipartBuilder(FormatUtils.OBJECT_MAPPER)
+          .addPart("url", configs.getWebhookUrl(request.getUrl()))
+          .addPart("max_connections", request.getMaxConnections())
+          .addJsonPart("allowed_updates", request.getAllowedUpdates())
+          .addPart("ip_address", request.getIpAddress())
+          .addPart("drop_pending_updates", request.getDropPendingUpdates())
+          .addPart("secret_token", request.getSecretToken())
+          .addInputFile("certificate", request.getCertificate(), true)
+          .build();
 
-    builder.addTextBody("url", configs.getWebhookUrl(request.getUrl()), TEXT_PLAIN_CONTENT_TYPE);
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
 
-    if (request.getMaxConnections() != null) {
-      builder.addTextBody("max_connections", request.getMaxConnections().toString(), TEXT_PLAIN_CONTENT_TYPE);
     }
-
-    if (request.getAllowedUpdates() != null) {
-      builder.addTextBody("allowed_updates", OBJECT_MAPPER.writeValueAsString(request.getAllowedUpdates()), TEXT_PLAIN_CONTENT_TYPE);
-    }
-
-    if (request.getIpAddress() != null) {
-      builder.addTextBody("ip_address", request.getIpAddress(), TEXT_PLAIN_CONTENT_TYPE);
-    }
-
-    if (request.getDropPendingUpdates() != null) {
-      builder.addTextBody("drop_pending_updates", request.getDropPendingUpdates().toString(), TEXT_PLAIN_CONTENT_TYPE);
-    }
-
-    if (request.getSecretToken() != null) {
-      builder.addTextBody("secret_token", request.getSecretToken(), TEXT_PLAIN_CONTENT_TYPE);
-    }
-
-    if (request.getCertificate() != null) {
-      InputFile webhookFile = request.getCertificate();
-
-      if (webhookFile.getNewMediaFile() != null) {
-        builder.addBinaryBody("certificate", webhookFile.getNewMediaFile(), ContentType.TEXT_PLAIN, webhookFile.getMediaName());
-      } else if (webhookFile.getNewMediaStream() != null) {
-        builder.addBinaryBody("certificate", webhookFile.getNewMediaStream(), ContentType.TEXT_PLAIN, webhookFile.getMediaName());
-      }
-    }
-
-    return builder.build();
   }
 
   static CloseableHttpClient getCloseableHttpClient() {
@@ -115,21 +94,16 @@ public class TelegramUtils {
   }
 
   public static void clearWebhook(BotConfigs configs) {
-    try (CloseableHttpClient httpClient = getCloseableHttpClient()) {
-      DeleteWebhook request  = new DeleteWebhook(true);
-      HttpPost      httpPost = buildClearWebhookRequest(configs, request);
+    try {
+      DeleteWebhook request = new DeleteWebhook(true);
 
-      try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
-        String responseContent = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-
-        Boolean result = request.deserializeResponse(responseContent);
-        if (!result) {
-          throw new TelegramApiRequestException("Error setting webhook:" + responseContent);
-        }
+      Boolean result = execute(configs, request);
+      if (!Boolean.TRUE.equals(result)) {
+        throw new TelegramApiRequestException("error clearing webhook");
       }
 
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
 
     }
   }
@@ -151,6 +125,25 @@ public class TelegramUtils {
     return httpPost;
   }
 
+  static <T extends Serializable, M extends BotApiMethod<T>> T execute(BotConfigs configs, M method) {
+    try {
+      HttpUrl url = configs.buildUrl(method.getMethod());
+      String body = FormatUtils.toJsonString(method);
+      Headers headers = (new Headers.Builder()).add("charset", StandardCharsets.UTF_8.name()).add("content-type", "application/json").build();
+      Request request = (new Request.Builder()).url(url).headers(headers).post(RequestBody.create(body, MediaType.parse("application/json"))).build();
+      return sendRequest(method, request).get();
+
+    } catch (Exception ex) {
+      throw new RuntimeException(String.format("failed to invoke %s, error: %s", method.getMethod(), ExceptionUtils.getStackTrace(ex)));
+    }
+  }
+
+  static <T extends Serializable, M extends PartialBotApiMethod<T>> TelegramMethodCallback<T, M> sendRequest(M method, Request request) {
+    TelegramMethodCallback<T, M> callback = new TelegramMethodCallback<>(method);
+    CLIENT.newCall(request).enqueue(callback);
+    return callback;
+  }
+
   @Getter
   @Builder
   @NoArgsConstructor
@@ -163,6 +156,16 @@ public class TelegramUtils {
 
     public String getRequestUrl(String apiPath) {
       return BASE_URL + this.botToken + "/" + apiPath;
+    }
+
+    public HttpUrl buildUrl(String methodPath) {
+      return (new HttpUrl.Builder())
+          .scheme(TelegramUrl.DEFAULT_URL.getSchema())
+          .host(TelegramUrl.DEFAULT_URL.getHost())
+          .port(TelegramUrl.DEFAULT_URL.getPort())
+          .addPathSegment("bot" + this.botToken)
+          .addPathSegment(methodPath)
+          .build();
     }
 
     public String getWebhookUrl(String baseUrl) {

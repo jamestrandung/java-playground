@@ -1,5 +1,6 @@
 package com.james.playground.telegram.bot.longpolling;
 
+import com.james.playground.telegram.bot.http.ProxiedOkHttpClient;
 import java.util.List;
 import java.util.function.BiConsumer;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +30,7 @@ public class MyLongPollingBot extends AbilityBot implements SpringLongPollingBot
   private static final String BOT_TOKEN = "7635664233:AAFceN-ZD8Lx4Mm1LkF8iEVzwhD5A7IwLT0";
 
   public MyLongPollingBot() {
-    super(new OkHttpTelegramClient(BOT_TOKEN), BOT_USERNAME);
+    super(new OkHttpTelegramClient(new ProxiedOkHttpClient(), BOT_TOKEN), BOT_USERNAME);
     log.info("MyBot is starting...");
     this.onRegister();
   }
