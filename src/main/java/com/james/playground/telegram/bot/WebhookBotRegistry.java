@@ -43,7 +43,7 @@ public class WebhookBotRegistry<B extends AbilityWebhookBot> {
           .build();
 
       SetWebhook request = SetWebhook.builder()
-          .url("https://43ec-203-127-162-66.ngrok-free.app/telegram")
+          .url("https://c883-203-127-162-66.ngrok-free.app/telegram")
           .maxConnections(100)
           .dropPendingUpdates(false)
           .secretToken(reference.getSecretToken())

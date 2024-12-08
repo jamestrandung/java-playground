@@ -1,6 +1,7 @@
 package com.james.playground.telegram.bot.longpolling;
 
 import com.james.playground.telegram.bot.http.ProxiedOkHttpClient;
+import com.james.playground.utils.FormatUtils;
 import java.util.List;
 import java.util.function.BiConsumer;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,13 @@ public class MyLongPollingBot extends AbilityBot implements SpringLongPollingBot
   @Override
   public long creatorId() {
     return 6374401545L;
+  }
+
+  public void consume(Update update) {
+    log.info("Received polling update, data: {}", update);
+    System.out.println(FormatUtils.toJsonString(update));
+
+    super.consume(update);
   }
 
   public Ability start() {

@@ -6,6 +6,7 @@ import com.james.playground.telegram.bot.WebhookBotFactory.SecuredWebhookBotRefe
 import com.james.playground.telegram.bot.WebhookBotRegistry;
 import com.james.playground.telegram.bot.webhook.MyWebhookBot;
 import com.james.playground.telegram.bot.webhook.MyWebhookBotFactory;
+import com.james.playground.utils.FormatUtils;
 import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ public class TelegramController {
   ) {
     String secretToken = request.getHeader("X-Telegram-Bot-Api-Secret-Token");
     log.info("Received webhook update, bot path: {}, token: {}, data: {}", botPath, secretToken, update);
+    System.out.println(FormatUtils.toJsonString(update));
 
     this.myWebhookBotRegistry.onWebhookUpdateReceived(botPath, secretToken, update);
   }
@@ -46,7 +48,7 @@ public class TelegramController {
     this.myWebhookBotFactory.refresh(botPath, secretToken);
 
     SecuredWebhookBotReference reference = this.myWebhookBotFactory.findBotReference(botPath);
-    
+
     this.myWebhookBotRegistry.registerWebhook(reference, MyWebhookBot.BOT_TOKEN);
   }
 
