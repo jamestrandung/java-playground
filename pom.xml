@@ -143,27 +143,27 @@
     <dependency>
       <artifactId>telegrambots-abilities</artifactId>
       <groupId>org.telegram</groupId>
-      <version>7.10.0</version>
+      <version>8.0.0</version>
     </dependency>
     <dependency>
       <artifactId>telegrambots-springboot-longpolling-starter</artifactId>
       <groupId>org.telegram</groupId>
-      <version>7.10.0</version>
+      <version>8.0.0</version>
     </dependency>
     <dependency>
       <artifactId>telegrambots-longpolling</artifactId>
       <groupId>org.telegram</groupId>
-      <version>7.10.0</version>
+      <version>8.0.0</version>
     </dependency>
     <dependency>
       <artifactId>telegrambots-webhook</artifactId>
       <groupId>org.telegram</groupId>
-      <version>7.10.0</version>
+      <version>8.0.0</version>
     </dependency>
     <dependency>
       <artifactId>telegrambots-client</artifactId>
       <groupId>org.telegram</groupId>
-      <version>7.10.0</version>
+      <version>8.0.0</version>
     </dependency>
     <dependency>
       <artifactId>kotlin-stdlib</artifactId>

@@ -49,6 +49,20 @@ public class FormatUtils {
     }
   }
 
+  public static <T> T fromJsonString(String json, Class<T> clazz) {
+    try {
+      if (StringUtils.isBlank(json)) {
+        return null;
+      }
+
+      return OBJECT_MAPPER.readValue(json, clazz);
+
+    } catch (Exception ex) {
+      log.error("JacksonUtils.parse failed, error: {}", ex.getMessage());
+      throw new RuntimeException(ex);
+    }
+  }
+
   public static <T> T fromJsonString(String json, TypeReference<T> reference) {
     try {
       if (StringUtils.isBlank(json)) {

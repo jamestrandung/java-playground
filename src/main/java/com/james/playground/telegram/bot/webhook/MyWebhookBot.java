@@ -88,8 +88,6 @@ public class MyWebhookBot extends AbilityWebhookBot {
               .cacheTime(5) // 2
               .build()
       );
-
-
     };
 
     return Reply.of(action, Flag.CALLBACK_QUERY);

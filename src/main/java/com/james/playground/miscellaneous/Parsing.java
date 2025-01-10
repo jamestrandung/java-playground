@@ -1,6 +1,7 @@
 package com.james.playground.miscellaneous;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.james.playground.temporal.dsl.language.nodes.delay.DelayNode;
 import com.james.playground.utils.FormatUtils;
 import lombok.AllArgsConstructor;
@@ -18,19 +19,28 @@ public class Parsing {
     //    String timeOfDay = "10:15:30";
     //    System.out.println(OffsetTime.parse(timeOfDay, DateTimeFormatter.ISO_OFFSET_TIME));
 
-    DelayNode node = DelayNode.builder()
-        .activeGroupId(123L)
-        .releaseDateTime("2024-06-19T20:49:00")
-        .build();
+    //    DelayNode node = DelayNode.builder()
+    //        .activeGroupId(123L)
+    //        .releaseDateTime("2024-06-19T20:49:00")
+    //        .build();
+    //
+    //    System.out.println(FormatUtils.toJsonString(node));
+    //
+    //    DelayNodeView view = DelayNodeView.builder()
+    //        .node(node)
+    //        .activeGroupCount(1L)
+    //        .build();
+    //
+    //    System.out.println(FormatUtils.toJsonString(view));
 
-    System.out.println(FormatUtils.toJsonString(node));
+    TypeReference<String> reference = new TypeReference<String>() {
+    };
 
-    DelayNodeView view = DelayNodeView.builder()
-        .node(node)
-        .activeGroupCount(1L)
-        .build();
+    System.out.println(reference.getType().getTypeName());
 
-    System.out.println(FormatUtils.toJsonString(view));
+    String email = FormatUtils.fromJsonString("asdaslkjd-qweqwe", new TypeReference<String>() {
+    });
+    System.out.println(FormatUtils.toJsonString(email));
   }
 
   @Data
