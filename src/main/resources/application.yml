@@ -2,7 +2,7 @@ spring:
   application.name: playground
   temporal:
     connection:
-      target: local
+    #      target: local
     workers-auto-discovery:
       packages:
         - com.james.playground.temporal

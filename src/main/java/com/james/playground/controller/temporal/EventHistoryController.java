@@ -8,6 +8,7 @@ import io.temporal.api.workflowservice.v1.GetWorkflowExecutionHistoryResponse;
 import io.temporal.client.WorkflowClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/temporal")
 public class EventHistoryController {
+  @Lazy
   @Autowired
   private WorkflowClient workflowClient;
 
@@ -31,7 +33,7 @@ public class EventHistoryController {
         .setExecution(execution)
         .build();
 
-    GetWorkflowExecutionHistoryResponse result = workflowClient.getWorkflowServiceStubs()
+    GetWorkflowExecutionHistoryResponse result = this.workflowClient.getWorkflowServiceStubs()
         .blockingStub()
         .getWorkflowExecutionHistory(request);
 

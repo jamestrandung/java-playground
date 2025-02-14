@@ -23,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,10 +37,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/temporal/dsl")
 public class DSLController {
+  @Lazy
   @Autowired
   private WorkflowClient workflowClient;
+  @Lazy
   @Autowired
   private MarketingWorkflowStore marketingWorkflowStore;
+  @Lazy
   @Autowired
   private UserGroupActivity userGroupActivity;
 

@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,9 +33,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/temporal/cancellation")
 public class CancellationController {
+  @Lazy
   @Autowired
   private WorkflowClient workflowClient;
-
+  @Lazy
   @Autowired
   private WorkflowServiceStubs workflowServiceStubs;
 

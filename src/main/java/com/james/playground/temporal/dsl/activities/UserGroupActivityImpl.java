@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Component;
 @ActivityImpl(taskQueues = {UserGroupActivity.QUEUE_NAME, MarketingWorkflow.QUEUE_NAME})
 public class UserGroupActivityImpl implements UserGroupActivity {
   private final Map<Long, AtomicInteger> counters = new ConcurrentHashMap<>();
+  @Lazy
   @Autowired
   private WorkflowClient workflowClient;
 

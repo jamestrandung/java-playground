@@ -19,11 +19,13 @@ import io.temporal.worker.WorkerOptions;
 import io.temporal.worker.WorkflowImplementationOptions;
 import javax.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Slf4j
 @Configuration
+@ConditionalOnProperty(value = "spring.temporal.connection.target")
 public class TemporalConfigs {
   @Bean
   public WorkerOptionsCustomizer workerOptions() {

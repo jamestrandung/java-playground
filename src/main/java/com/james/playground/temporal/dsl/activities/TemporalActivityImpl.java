@@ -25,15 +25,17 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 @ActivityImpl(taskQueues = {TemporalActivity.QUEUE_NAME})
 public class TemporalActivityImpl implements TemporalActivity {
+  @Lazy
   @Autowired
   WorkflowServiceStubs workflowServiceStubs;
-
+  @Lazy
   @Autowired
   WorkflowClient workflowClient;
 

@@ -15,12 +15,14 @@ import io.temporal.client.schedules.SchedulePolicy;
 import io.temporal.client.schedules.ScheduleSpec;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ScheduledMoneyTransfer {
   private static final String SCHEDULE_NAME = "ScheduledMoneyTransfer";
 
+  @Lazy
   @Autowired
   private ScheduleClient scheduleClient;
 
