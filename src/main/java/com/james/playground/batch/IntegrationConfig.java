@@ -15,12 +15,14 @@ import org.springframework.integration.aggregator.HeaderAttributeCorrelationStra
 import org.springframework.integration.aggregator.MessageCountReleaseStrategy;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.ExecutorChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.store.SimpleMessageStore;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Slf4j
 @Configuration
@@ -37,11 +39,25 @@ public class IntegrationConfig {
 
   @Bean
   public MessageChannel aggregateChannel() {
-    return new DirectChannel();
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setCorePoolSize(5); // Minimum threads
+    executor.setMaxPoolSize(10); // Maximum threads
+    executor.setQueueCapacity(25); // Queue size before adding more threads
+    executor.setThreadNamePrefix("multiplication-aggregate-");
+    executor.initialize(); // Must initialize before use
+
+    return new ExecutorChannel(executor);
+
+    //    return new DirectChannel();
   }
 
   @Bean
   public MessageChannel sumChannel() {
+    //    ThreadFactory      factory  = new DefaultThreadFactory("sum-aggregate");
+    //    ThreadPoolExecutor executor = new ThreadPoolExecutor(16, 16, 0, TimeUnit.SECONDS, new SynchronousQueue<>(), factory);
+    //
+    //    return new ExecutorChannel(executor);
+
     return new DirectChannel();
   }
 
@@ -55,7 +71,7 @@ public class IntegrationConfig {
     /* WORKING IN BOTH HAPPY AND EXCEPTION PATHS */
 
     return IntegrationFlows.from(this.singleChannel())
-        .handle((payload, headers) -> this.mathService.multiplyByTwoExceptionally((Integer) payload))
+        .handle((payload, headers) -> this.mathService.multiplyByTwo((Integer) payload))
         .get();
 
     /* NOT WORKING */
@@ -74,8 +90,13 @@ public class IntegrationConfig {
   public IntegrationFlow processMultiplicationAggregate() {
     /* WORKING IN BOTH HAPPY AND EXCEPTION PATHS */
 
-    return IntegrationFlows.from(this.aggregateChannel())
+    return IntegrationFlows.from("aggregateChannel")
         .log()
+        .log(msg -> {
+          log.info("IntegrationConfig.processMultiplication thread name 1: {}", Thread.currentThread().getName());
+
+          return null;
+        })
         .aggregate(aggregator -> aggregator
             .messageStore(new SimpleMessageStore()) // Infinite capacity
             .correlationStrategy(new HeaderAttributeCorrelationStrategy("correlationId"))
@@ -116,8 +137,18 @@ public class IntegrationConfig {
             })
         )
         .log()
+        .log(msg -> {
+          log.info("IntegrationConfig.processMultiplication thread name 2: {}", Thread.currentThread().getName());
+
+          return null;
+        })
         .split()
         .log()
+        .log(msg -> {
+          log.info("IntegrationConfig.processMultiplication thread name 3: {}", Thread.currentThread().getName());
+
+          return null;
+        })
         .handle(Pair.class, (payload, headers) -> {
           Object result = (payload.getRight() instanceof Throwable) ? payload.getRight() : Optional.ofNullable(payload.getRight());
 
@@ -128,6 +159,11 @@ public class IntegrationConfig {
               .build();
         })
         .log()
+        .log(msg -> {
+          log.info("IntegrationConfig.processMultiplication thread name 4: {}", Thread.currentThread().getName());
+
+          return null;
+        })
         .handle((payload, headers) -> payload)
         .get();
   }
@@ -179,9 +215,21 @@ public class IntegrationConfig {
     //        .get();
 
     /* WORKING IN BOTH HAPPY AND EXCEPTION PATHS */
+    //    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    //    executor.setCorePoolSize(5); // Minimum threads
+    //    executor.setMaxPoolSize(10); // Maximum threads
+    //    executor.setQueueCapacity(25); // Queue size before adding more threads
+    //    executor.setThreadNamePrefix("default-task-executor-");
+    //    executor.initialize(); // Must initialize before use
 
-    return IntegrationFlows.from(this.sumChannel())
+    return IntegrationFlows.from("sumChannel")
+        //        .channel(MessageChannels.executor(executor)) // NOT WORKING
         .log()
+        .log(msg -> {
+          log.info("IntegrationConfig.processSumAggregate thread name: {}", Thread.currentThread().getName());
+
+          return null;
+        })
         .aggregate(aggregator -> aggregator
             .messageStore(new SimpleMessageStore()) // Infinite capacity
             .correlationStrategy(new HeaderAttributeCorrelationStrategy("correlationId"))
@@ -197,7 +245,7 @@ public class IntegrationConfig {
               try {
                 Integer sum = StreamEx.of(group.getMessages())
                     .map(message -> (Integer) message.getPayload())
-                    .toListAndThen(this.mathService::sumExceptionally);
+                    .toListAndThen(this.mathService::sum);
 
                 List<Pair<Object, Integer>> payload = group.getMessages()
                     .stream()
@@ -231,6 +279,11 @@ public class IntegrationConfig {
               .build();
         })
         .log()
+        .log(msg -> {
+          log.info("IntegrationConfig.processSumAggregate thread name 2: {}", Thread.currentThread().getName());
+
+          return null;
+        })
         .handle((payload, headers) -> payload)
         .get();
   }

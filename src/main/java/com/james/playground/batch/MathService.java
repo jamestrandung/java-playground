@@ -14,12 +14,18 @@ public class MathService {
 
     }
 
-    return null;
+    //    return null;
 
-    //    return numbers.stream().mapToInt(Integer::intValue).sum();
+    return numbers.stream().mapToInt(Integer::intValue).sum();
   }
 
   public int sumExceptionally(List<Integer> numbers) {
+    try {
+      Thread.sleep(5000);
+    } catch (Exception ex) {
+
+    }
+
     throw new RuntimeException("Exception thrown from MathService.sumExceptionally()");
   }
 

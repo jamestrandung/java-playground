@@ -5,7 +5,6 @@ import com.james.playground.utils.FormatUtils;
 import java.util.List;
 import java.util.function.BiConsumer;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
 import org.telegram.telegrambots.abilitybots.api.bot.BaseAbilityBot;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
@@ -25,7 +24,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRem
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 @Slf4j
-@Component
+//@Component
 public class MyLongPollingBot extends AbilityBot implements SpringLongPollingBot {
   private static final String BOT_USERNAME = "okx_faq_bot";
   private static final String BOT_TOKEN = "7635664233:AAFceN-ZD8Lx4Mm1LkF8iEVzwhD5A7IwLT0";

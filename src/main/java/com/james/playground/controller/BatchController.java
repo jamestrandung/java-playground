@@ -4,8 +4,10 @@ import com.james.playground.batch.MathGateway;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class BatchController {
   @Autowired
   MathGateway mathGateway;
+  @Autowired
+  @Qualifier("controllerExecutor")
+  ThreadPoolExecutor threadPoolExecutor;
 
   @PostMapping("/single")
   public String batch(@RequestParam int limit) {
@@ -59,9 +64,12 @@ public class BatchController {
 
       CompletableFuture<Void> future = this.mathGateway.multiplyByTwoAggregate(finalCorrelationId, input)
           .thenAccept(result -> {
-            log.info("TestController.multiplyAggregate result, input: {}, output: {}", input, result.orElse(null));
+            log.info(
+                "TestController.multiplyAggregate result, input: {}, output: {}, thread: {}", input, result.orElse(null),
+                Thread.currentThread().getName()
+            );
           })
-          .exceptionally(throwable -> {
+          .exceptionallyAsync(throwable -> {
             log.info("TestController.multiplyAggregate failed, input: {}, error: {}", input, throwable.getMessage());
 
             return null;
@@ -89,7 +97,10 @@ public class BatchController {
 
       CompletableFuture<Void> future = this.mathGateway.sumAggregate(finalCorrelationId, input)
           .thenAccept(result -> {
-            log.info("TestController.sumAggregate result, input: {}, output: {}", input, result.orElse(null));
+            log.info(
+                "TestController.sumAggregate result, input: {}, output: {}, thread: {}",
+                input, result.orElse(null), Thread.currentThread().getName()
+            );
           })
           .exceptionally(throwable -> {
             log.info("TestController.sumAggregate failed, input: {}, error: {}", input, throwable.getMessage());

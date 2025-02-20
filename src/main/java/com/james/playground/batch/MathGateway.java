@@ -7,7 +7,7 @@ import org.springframework.integration.annotation.MessagingGateway;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 
-@MessagingGateway
+@MessagingGateway(asyncExecutor = "batchingTaskExecutor")
 public interface MathGateway {
   @Gateway(requestChannel = "singleChannel")
   CompletableFuture<Integer> multiplyByTwoSingle(
