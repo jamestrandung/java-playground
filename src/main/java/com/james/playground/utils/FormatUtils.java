@@ -63,6 +63,20 @@ public class FormatUtils {
     }
   }
 
+  public static <C extends Collection<T>, T> C fromJsonString(String json, Class<C> collectionClazz, Class<T> elementClazz) {
+    try {
+      if (StringUtils.isBlank(json)) {
+        return null;
+      }
+
+      return OBJECT_MAPPER.readValue(json, OBJECT_MAPPER.getTypeFactory().constructCollectionType(collectionClazz, elementClazz));
+
+    } catch (Exception ex) {
+      log.error("JacksonUtils.parse failed, error: {}", ex.getMessage());
+      throw new RuntimeException(ex);
+    }
+  }
+
   public static <T> T fromJsonString(String json, TypeReference<T> reference) {
     try {
       if (StringUtils.isBlank(json)) {

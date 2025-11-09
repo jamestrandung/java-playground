@@ -98,6 +98,7 @@ public class IntegrationConfig {
           return null;
         })
         .aggregate(aggregator -> aggregator
+            .async(true)
             .messageStore(new SimpleMessageStore()) // Infinite capacity
             .correlationStrategy(new HeaderAttributeCorrelationStrategy("correlationId"))
             .releaseStrategy(new MessageCountReleaseStrategy(5)) // Max batch size
